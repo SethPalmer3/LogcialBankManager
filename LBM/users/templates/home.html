@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ user.username }} Home Page</title>
+</head>
+<body>
+    <h1> Hello {{ user.first_name }} </h1>
+    <br>
+    <a href="{% url 'users:login' %}"> Logout </a>
+</body>
+</html>

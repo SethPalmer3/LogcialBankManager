@@ -6,5 +6,6 @@ app_name = "users"
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.user_login, name='login'),
-    path('signup/', views.user_signup, name='signup')
+    path('signup/', views.user_signup, name='signup'),
+    path('home/', views.user_home, name='home')
 ]
