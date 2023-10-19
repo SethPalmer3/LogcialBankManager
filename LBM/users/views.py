@@ -23,16 +23,24 @@ def user_signup(request):
     if request.method == "POST": # If the user has inputted data
         form = SignUpForm(request.POST) # Parse signup form information
         if form.is_valid():
-            user = form.save(commit=False)
-            user.set_password(form.cleaned_data['password']) # Setting password
-            user.save()
+            try:
+                user = form.save(commit=False)
+                user.set_password(form.cleaned_data['password']) # Setting password
+                user.save()
 
-            profile = UserProfile() # Custom user information
-            profile.user = user
-            profile.save()
-
-            login(request, user) # Persistant login of user
-            return redirect(reverse('users:home')) # Redirects to their new home screen
+                profile = UserProfile() # Custom user information
+                profile.detail_json = {
+                        'test': 'data'
+                        }
+                profile.user = user
+                profile.save()
+                login(request, user) # Persistant login of user
+                return redirect(reverse('users:home')) # Redirects to their new home screen
+            except Exception as e:
+                print(e)
+                form = SignUpForm()
+                return render(request, 'signup.html', {'form': form, 'error': "An Error Has Occured"})
+                
     else: # First time going to page
         form = SignUpForm()
     return render(request, 'signup.html', {'form': form})

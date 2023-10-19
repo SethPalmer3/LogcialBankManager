@@ -11,6 +11,9 @@
         <button type="submit">Signup</button>
     </form>
     <br>
+    {% if error %}
+    <p>{{ error }}</p>
+    {% endif %}
     <a href="{% url 'users:login' %}"> Back to Login </a>
 </body>
 </html>
