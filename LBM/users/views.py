@@ -12,6 +12,9 @@ NA = 'NA'
 
 
 # Create your views here.
+def index(request):
+    return redirect(reverse('users:login'))
+
 # Login page (initial page)
 def user_login(request):
     if request.user.is_authenticated:
