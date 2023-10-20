@@ -7,8 +7,9 @@
     <h1> Hello {{ user.first_name }} </h1>
     <br>
     {% for p in user_parts %}
-    <p> {{ p.label }} </p>
+    <a href="{% url 'users:partition' p.id %}"> {{ p.label }} </a><br><br>
     {% endfor %}
-    <a href="{% url 'users:login' %}"> Logout </a>
+      <a href="{% url 'users:add_partition' %}"> Create a Partiton </a><br><br>
+    <a href="{% url 'users:logout' %}"> Logout </a>
 </body>
 </html>

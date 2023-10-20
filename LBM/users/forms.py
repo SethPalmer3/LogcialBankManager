@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import UserProfile
+from .models import Partition, UserProfile
 
 class SignUpForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput())
@@ -15,3 +15,14 @@ class SignUpForm(forms.ModelForm):
         if cd['password'] != cd['password2']:
             raise forms.ValidationError('Passwords dont\'t match.')
         return cd['password2']
+
+class PartitionEditForm(forms.Form):
+    new_label = forms.CharField(label="New Partition Label", max_length=200)
+    new_amount = forms.FloatField(label="New Amount")
+
+class NewPartiton(forms.ModelForm):
+    label = forms.CharField(label="Partiton Label", max_length=200)
+    current_amount= forms.FloatField(label="Inital Amount")
+    class Meta:
+        model = Partition
+        fields = ['label', 'current_amount']
