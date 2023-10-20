@@ -1,8 +1,15 @@
 from django.shortcuts import HttpResponse, render, redirect, reverse
 from django.contrib.auth import authenticate, login
 
-from .models import UserProfile
+from .models import UserProfile, Partition
 from .forms import SignUpForm
+from pprint import pprint
+
+ABS_AMOUNT = 'amount'
+PART_NAME = 'parition_name'
+NA = 'NA'
+
+
 
 # Create your views here.
 # Login page (initial page)
@@ -30,7 +37,8 @@ def user_signup(request):
 
                 profile = UserProfile() # Custom user information
                 profile.detail_json = {
-                        'test': 'data'
+                        ABS_AMOUNT: 0,
+                        PART_NAME: NA
                         }
                 profile.user = user
                 profile.save()
@@ -46,4 +54,5 @@ def user_signup(request):
     return render(request, 'signup.html', {'form': form})
 
 def user_home(request):
-    return render(request, 'home.html')
+    partitons = Partition.objects.filter(owner=request.user)
+    return render(request, 'home.html', {'user_parts': partitons})

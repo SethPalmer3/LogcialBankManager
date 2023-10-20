@@ -6,6 +6,9 @@
 <body>
     <h1> Hello {{ user.first_name }} </h1>
     <br>
+    {% for p in user_parts %}
+    <p> {{ p.label }} </p>
+    {% endfor %}
     <a href="{% url 'users:login' %}"> Logout </a>
 </body>
 </html>
