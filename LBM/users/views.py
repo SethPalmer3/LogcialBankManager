@@ -14,6 +14,10 @@ NA = 'NA'
 # Create your views here.
 # Login page (initial page)
 def user_login(request):
+    if request.user.is_authenticated:
+        print('authenticated ')
+        return redirect(reverse('users:home'))
+
     if request.method == "POST":
         username = request.POST.get('username')
         password = request.POST.get('password')
