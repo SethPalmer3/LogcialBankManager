@@ -16,10 +16,12 @@
         </div>
         <input type="submit" value="Login">
     </form>
-    {% if error %}
-    <p>{{ error }}</p>
-    {% endif %}
+    <div class="anchor_wrap">
+      <a href="{% url 'users:signup' %}"> Sign Up </a>
+    </div>
     <br>
-    <a href="{% url 'users:signup' %}"> Sign Up </a>
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
 </body>
 </html>

@@ -13,11 +13,25 @@ input[type="submit"]{
   padding-bottom: 5px;
 
   background-color: lightblue;
-  border-width: 5px;
-  border-radius: 10px;
-  border-color: blue;
+  border-width: 0px;
+  /* border-radius: 10px; */
+  /* border-color: blue; */
+
+  outline: blue solid 2px;
 
   cursor: pointer;
+
+  transition: background-color, scale 0.3s;
+}
+
+input[type="submit"]:hover {
+  background-color: lightgrey;
+  scale: 105%;
+}
+
+
+input[type="submit"]:active() {
+  background-color: grey;
 }
 
 .textual_input {
@@ -57,22 +71,57 @@ input::placeholder {
 
 a {
   display: inline-block;
-  margin-right: auto;
-  margin-left: auto;
   margin-top: 20px;
 
   background-color: lightblue;
-  border-width: 5px;
-  border-radius: 10px;
-  border-color: blue;
+
+  outline: 2px solid blue;
+  outline-offset: 2px;
 
   font-size: 27px;
+  font-family: monospace;
   color: darkblue;
   text-decoration: none;
+  text-align: center;
 
   cursor: pointer;
+
+  padding: 10px 15px;
+
+  transition: background-color, scale 0.3s;
 }
 
 a:hover {
-  background-color: lightblue + lightgrey;
+  background-color: lightgrey;
+  scale: 105%;
+}
+
+a:active{
+  background-color: grey;
+}
+
+/* a:focus{ */
+/*   outline: 2px solid blue; */
+/*   outline-offset: 2px; */
+/* } */
+
+.error {
+  display: block;
+
+  top: 10px;
+  left: 1px;
+
+  background-color: red;
+  color: white;
+  border: 3px solid darkred;
+  border-radius: 10px;
+
+  padding: 10px 15px;
+
+  font-size: 20px;
+}
+
+
+.anchor_wrap {
+  text-align: center;
 }

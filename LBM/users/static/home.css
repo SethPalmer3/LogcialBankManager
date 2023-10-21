@@ -1,0 +1,22 @@
+body {
+  background-color: lightblue;
+}
+
+h1 {
+  color: darkblue;
+}
+
+a {
+  text-align: center;
+  text-decoration: none;
+}
+
+.partition_wrap {
+  display: flexbox;
+}
+
+.anchor_wrap {
+  font-size: 23px;
+  font-family: monospace;
+  outline: blue solid 2xp;
+}
