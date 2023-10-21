@@ -1,6 +1,7 @@
 from django.shortcuts import HttpResponse, render, redirect, reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 
 from .models import UserProfile, Partition
 from .forms import NewPartiton, SignUpForm, PartitionEditForm
@@ -42,19 +43,26 @@ def user_signup(request):
         form = SignUpForm(request.POST) # Parse signup form information
         if form.is_valid():
             try:
-                user = form.save(commit=False)
-                user.set_password(form.cleaned_data['password']) # Setting password
-                user.save()
+                with transaction.atomic(): # Discards all model instances if a problem arises
+                    user = form.save(commit=False)
+                    user.set_password(form.cleaned_data['password']) # Setting password
+                    user.save()
 
-                profile = UserProfile() # Custom user information
-                profile.user = user
-                profile.save()
+                    profile = UserProfile() # Custom user information
+                    profile.user = user
+                    profile.save()
+                    first_parition = Partition.objects.create()
+                    first_parition.owner.add(user)
+                    first_parition.label = "Undefined"
+                    first_parition.current_amount = 0.0
+                    first_parition.save()
+
                 login(request, user) # Persistant login of user
                 return redirect(reverse('users:home')) # Redirects to their new home screen
             except Exception as e:
                 print(e)
                 form = SignUpForm()
-                return render(request, 'signup.html', {'form': form, 'error': "An Error Has Occured"})
+                return render(request, 'signup.html', {'form': form, 'error': e})
                 
     else: # First time going to page
         form = SignUpForm()
@@ -62,6 +70,9 @@ def user_signup(request):
 
 @login_required
 def user_home(request):
+    if request.user is None:
+        print('User does not exist')
+        return redirect(reverse('users:login'))
     partitons = Partition.objects.filter(owner=request.user)
     return render(request, 'home.html', {'user_parts': partitons})
 
