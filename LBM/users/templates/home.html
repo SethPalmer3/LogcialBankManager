@@ -9,15 +9,15 @@
     <h1> Hello {{ user.first_name }} </h1>
     <br>
     {% for p in user_parts %}
-    <div class="partition_wrap">
-      <a href="{% url 'users:partition' p.id %}"> {{ p.label }} - ${{ p.current_amount }} </a><br><br>
-    </div>
+    <a href="{% url 'users:partition' p.id %}" class="partition_wrap_link">
+        <div class="partition_wrap">
+            <p class="partition_label"> {{ p.label }} </p>
+            <p class="partition_amount"> ${{ p.current_amount }} </p>
+        </div>
+    </a>
     {% endfor %}
-    <div class="anchor_wrap">
-      <a href="{% url 'users:add_partition' %}"> Create a Partiton </a><br><br>
-    </div>
-    <div class="anchor_wrap">
-      <a href="{% url 'users:logout' %}"> Logout </a>
-    </div>
+    <br>
+    <a href="{% url 'users:add_partition' %}" class="anchor_wrap"> Create a Partiton </a>
+    <a href="{% url 'users:logout' %}" class="anchor_wrap"> Logout </a>
 </body>
 </html>

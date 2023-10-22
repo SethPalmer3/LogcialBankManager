@@ -1,22 +1,83 @@
 body {
-  background-color: lightblue;
+    background-color: lightblue;
 }
 
 h1 {
-  color: darkblue;
+    color: darkblue;
 }
 
-a {
-  text-align: center;
-  text-decoration: none;
+/* a { */
+/*     text-align: center; */
+/*     text-decoration: none; */
+/* } */
+
+.partition_wrap_link{
+    display: inline-block;
+    text-decoration: none;
+    color: inherit;
+    vertical-align: top;
 }
 
 .partition_wrap {
-  display: flexbox;
+    display: inline-block;
+    border: 3px solid blue;
+    border-radius: 10px;
+    width: 15vw; 
+    height: 15vw;
+    padding: 5px;
+    vertical-align: top;
+    transition: background-color, scale 0.3s;
+    margin-left: 10px;
+}
+
+.partition_wrap:hover {
+  background-color: lightgrey;
+  scale: 105%;
+}
+
+.partition_wrap:active{
+  background-color: grey;
+}
+
+.partition_label {
+    color: darkblue;
+    font-size: 23px;
+}
+
+.partition_amoutn {
+    color: blue;
+    font-size: 20px;
 }
 
 .anchor_wrap {
-  font-size: 23px;
-  font-family: monospace;
-  outline: blue solid 2xp;
+    text-decoration: none;
+    display: inline-block;
+    vertical-align: middle;
+
+    font-size: 23px;
+    font-family: monospace;
+    text-align: center;
+
+    outline: blue solid 2px;
+    
+    margin-top: 30px;
+    margin-left: 20px;
+
+    padding: 10px;
+
+    transition: background-color, scale 0.3s;
+    cursor: pointer;
+    height: 5vw;
+
+    line-height: 5vw;
 }
+
+.anchor_wrap:hover {
+  background-color: lightgrey;
+  scale: 105%;
+}
+
+.anchor_wrap:active{
+  background-color: grey;
+}
+
