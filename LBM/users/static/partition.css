@@ -44,12 +44,8 @@ h1 {
   background-color: grey;
 }
 
-.partition_label {
-    color: darkblue;
-    font-size: 23px;
-}
 
-.partition_amount {
+.partition_detail {
     color: blue;
     font-size: 20px;
 }
@@ -62,6 +58,7 @@ h1 {
     font-size: 23px;
     font-family: monospace;
     text-align: center;
+    color: blue;
 
     outline: blue solid 2px;
     

@@ -1,0 +1,103 @@
+body {
+    background-color: lightblue;
+}
+
+h1 {
+    color: darkblue;
+    margin-left: 20px;
+    margin-top: 30px;
+    text-decoration: underline;
+    font-family: monospace;
+    font-size: 40px;
+}
+
+/* a { */
+/*     text-align: center; */
+/*     text-decoration: none; */
+/* } */
+
+input[type="submit"]{
+  display: block;
+  margin-left: 20px;
+  margin-top: 20px;
+
+  font-size: 27px;
+  color: darkblue;
+
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+
+  background-color: lightblue;
+  border-width: 0px;
+  /* border-radius: 10px; */
+  /* border-color: blue; */
+
+  outline: blue solid 2px;
+
+  cursor: pointer;
+
+  transition: background-color, scale 0.3s;
+}
+
+input[type="submit"]:hover {
+  background-color: lightgrey;
+  scale: 105%;
+}
+
+
+input[type="submit"]:active() {
+  background-color: grey;
+}
+
+input[type="text"] {
+    height: 40px;
+    padding: 20px;
+
+    color: blue;
+    background-color: lightgrey;
+    border-width: 3px;
+    border-radius: 10px;
+    border-color: blue;
+
+    left: 20px;
+    font-size: 23px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 10px;
+
+    margin-left: 20px;
+}
+
+input[type="number"] {
+    height: 40px;
+    padding: 20px;
+
+    color: blue;
+    background-color: lightgrey;
+    border-width: 3px;
+    border-radius: 10px;
+    border-color: blue;
+
+    left: 20px;
+    font-size: 23px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 10px;
+
+    margin-left: 20px;
+}
+
+label{
+    color: blue;
+    font-size: 20px;
+    font-family: monospace;
+    margin-left: 20px;
+}

@@ -6,7 +6,7 @@
     <title>{{ user.username }} Home Page</title>
 </head>
 <body>
-    <h1> Hello {{ user.first_name }} </h1>
+    <h1> Hello {{ user.first_name }}! </h1>
     <br>
     {% for p in user_parts %}
     <a href="{% url 'users:partition' p.id %}" class="partition_wrap_link">

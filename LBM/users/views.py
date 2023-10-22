@@ -95,7 +95,7 @@ def user_partition_edit(request, partition_id):
     else:
         form = PartitionEditForm()
 
-    return render(request, "partition_edit.html", {'form': form})
+    return render(request, "partition_edit.html", {'form': form, 'partition_id': partition_id})
 
 @login_required
 def add_partition(request):
