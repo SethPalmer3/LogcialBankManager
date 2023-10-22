@@ -7,6 +7,9 @@
 </head>
 <body>
     <h1> Hello {{ user.first_name }}! </h1>
+    {% if user_profile %}
+    <h2> Current total amount: ${{ user_profile.total_amount }}</h2>
+    {% endif %}
     <br>
     {% for p in user_parts %}
     <a href="{% url 'users:partition' p.id %}" class="partition_wrap_link">
@@ -18,6 +21,7 @@
     {% endfor %}
     <br>
     <a href="{% url 'users:add_partition' %}" class="anchor_wrap"> Create a Partiton </a>
+    <a href="{% url 'users:get_bank' %}" class="anchor_wrap"> Get Bank Info </a>
     <a href="{% url 'users:logout' %}" class="anchor_wrap"> Logout </a>
 </body>
 </html>

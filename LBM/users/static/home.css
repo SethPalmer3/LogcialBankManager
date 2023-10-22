@@ -24,11 +24,12 @@ h1 {
 }
 
 .partition_wrap {
-    display: inline-block;
+    display: flex;
+    flex-direction: column;
     border: 3px solid blue;
     border-radius: 10px;
-    width: 15vw; 
-    height: 15vw;
+    width: 17vw; 
+    height: 17vw;
     padding: 5px;
     vertical-align: top;
     transition: background-color, scale 0.3s;
@@ -45,11 +46,15 @@ h1 {
 }
 
 .partition_label {
+    text-align: center;
+
     color: darkblue;
     font-size: 23px;
 }
 
 .partition_amount {
+    text-align: center;
+    margin-top:auto;
     color: blue;
     font-size: 20px;
 }

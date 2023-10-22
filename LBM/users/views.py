@@ -3,6 +3,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 
+import requests
+
 from .models import UserProfile, Partition
 from .forms import NewPartiton, SignUpForm, PartitionEditForm
 
@@ -74,7 +76,8 @@ def user_home(request):
         print('User does not exist')
         return redirect(reverse('users:login'))
     partitons = Partition.objects.filter(owner=request.user)
-    return render(request, 'home.html', {'user_parts': partitons})
+    userprof = UserProfile.objects.filter(user=request.user).first()
+    return render(request, 'home.html', {'user_parts': partitons, 'user_profile': userprof})
 
 @login_required
 def user_partition_view(request, partition_id):
@@ -113,4 +116,18 @@ def add_partition(request):
 @login_required
 def remove_partiton(request, partition_id):
     Partition.objects.get(id=partition_id).delete()
+    return redirect(reverse('users:home')) # Redirects to their new home screen
+
+def get_bank(request):
+    if request.user:
+        userprof = UserProfile.objects.filter(user=request.user).first()
+        response = requests.get('http://127.0.0.1:7000/account-holder/1/')
+        total = 0.0
+        for bank_acc in response.json()['bank_accounts']:
+            total += float(bank_acc['balance'])
+
+        userprof.total_amount = total
+        userprof.save()
+        print(response.json())
+        print(total)
     return redirect(reverse('users:home')) # Redirects to their new home screen
