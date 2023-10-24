@@ -1,4 +1,4 @@
-from django.shortcuts import HttpResponse, render, redirect, reverse
+from django.shortcuts import Http404, HttpResponse, render, redirect, reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -113,6 +113,7 @@ def remove_partiton(request, partition_id):
     return redirect(reverse('users:home')) # Redirects to their new home screen
 
 def get_bank(request):
+    return Http404()
     if request.user:
         userprof = UserProfile.objects.filter(user=request.user).first()
         response = requests.get('http://127.0.0.1:7000/account-holder/1/')

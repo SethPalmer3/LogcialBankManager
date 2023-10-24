@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -11,6 +12,7 @@ class UserProfile(models.Model):
         return self.user.username
 
 class Partition(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ManyToManyField(User)
     label = models.CharField(max_length=200)
     current_amount = models.DecimalField(max_digits=20,decimal_places=2, default=0.0)
