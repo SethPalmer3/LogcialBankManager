@@ -1,37 +1,31 @@
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 input[type="submit"]{
   display: block;
+    background-color: inherit;
   margin-right: auto;
   margin-left: auto;
   margin-top: 20px;
 
   font-size: 27px;
-  color: darkblue;
 
   padding-left: 10px;
   padding-right: 10px;
   padding-top: 5px;
   padding-bottom: 5px;
 
-  background-color: lightblue;
-  border-width: 0px;
-  /* border-radius: 10px; */
-  /* border-color: blue; */
 
-  outline: blue solid 2px;
+    outline-style: solid;
+    outline-width: 2px;
+
+    border-width: 0px;
 
   cursor: pointer;
 
   transition: background-color, scale 0.3s;
-}
-
-input[type="submit"]:hover {
-  background-color: lightgrey;
-  scale: 105%;
-}
-
-
-input[type="submit"]:active() {
-  background-color: grey;
 }
 
 .textual_input {
@@ -51,58 +45,25 @@ input.text_input {
   height: 40px;
   padding: 20px;
 
-  color: blue;
-  background-color: lightgrey;
   border-width: 3px;
   border-radius: 10px;
-  border-color: blue;
 }
 
-
-body {
-  background-color: lightblue;
-}
 
 input::placeholder {
   font-size: 23px;
-  color: darkblue;
 }
 
-a {
-  display: inline-block;
-  margin-top: 20px;
+.signup {
+    /* display: inline-block; */
+    margin-top: 20px;
 
-  background-color: lightblue;
+    font-size: 27px;
+    font-family: monospace;
 
-  outline: 2px solid blue;
-  outline-offset: 2px;
+    padding: 10px 15px;
 
-  font-size: 27px;
-  font-family: monospace;
-  color: darkblue;
-  text-decoration: none;
-  text-align: center;
-
-  cursor: pointer;
-
-  padding: 10px 15px;
-
-  transition: background-color, scale 0.3s;
 }
-
-a:hover {
-  background-color: lightgrey;
-  scale: 105%;
-}
-
-a:active{
-  background-color: grey;
-}
-
-/* a:focus{ */
-/*   outline: 2px solid blue; */
-/*   outline-offset: 2px; */
-/* } */
 
 .error {
   display: block;
@@ -120,7 +81,3 @@ a:active{
   font-size: 20px;
 }
 
-
-.anchor_wrap {
-  text-align: center;
-}

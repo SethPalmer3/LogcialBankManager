@@ -1,16 +1,26 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'partition_edit.css' %}">
+<link rel="stylesheet" href="{% static 'main_color_scheme.css' %}">
+<link rel="stylesheet" href="{% static 'regular_styles.css' %}">
+
 <!DOCTYPE html>
 <html>
 <head>
     <title>{{ partition_data }} Edit Page</title>
 </head>
-<body>
+<body class="background">
     <form method="post">
       {% csrf_token %}
       {{ form.as_p }}
-      <input type="submit" value="Submit">
+      <input type="submit" value="Submit" class="text outline button_hover button_like">
     </form>
-    <a href="{% url 'users:partition' partition_id %}" class="anchor_wrap"> Cancel </a>
+    <a href="{% url 'users:partition' partition_id %}" class="anchor_wrap text outline button_hover"> Cancel </a>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
 </body>
 </html>

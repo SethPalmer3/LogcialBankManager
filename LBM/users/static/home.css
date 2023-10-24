@@ -1,9 +1,5 @@
-body {
-    background-color: lightblue;
-}
 
 h1 {
-    color: darkblue;
     margin-left: 20px;
     margin-top: 30px;
     text-decoration: underline;
@@ -19,14 +15,15 @@ h1 {
 .partition_wrap_link{
     display: inline-block;
     text-decoration: none;
-    color: inherit;
+    /* color: inherit; */
     vertical-align: top;
 }
 
 .partition_wrap {
     display: flex;
     flex-direction: column;
-    border: 3px solid blue;
+    border-width: 3px;
+    border-style: solid;
     border-radius: 10px;
     width: 17vw; 
     height: 17vw;
@@ -37,7 +34,6 @@ h1 {
 }
 
 .partition_wrap:hover {
-  background-color: lightgrey;
   scale: 105%;
 }
 
@@ -48,46 +44,12 @@ h1 {
 .partition_label {
     text-align: center;
 
-    color: darkblue;
     font-size: 23px;
 }
 
 .partition_amount {
     text-align: center;
     margin-top:auto;
-    color: blue;
     font-size: 20px;
-}
-
-.anchor_wrap {
-    text-decoration: none;
-    display: inline-block;
-    vertical-align: middle;
-
-    font-size: 23px;
-    font-family: monospace;
-    text-align: center;
-
-    outline: blue solid 2px;
-    
-    margin-top: 30px;
-    margin-left: 20px;
-
-    padding: 10px;
-
-    transition: background-color, scale 0.3s;
-    cursor: pointer;
-    height: 5vw;
-
-    line-height: 5vw;
-}
-
-.anchor_wrap:hover {
-  background-color: lightgrey;
-  scale: 105%;
-}
-
-.anchor_wrap:active{
-  background-color: grey;
 }
 

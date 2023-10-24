@@ -1,27 +1,36 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'home.css' %}">
+<link rel="stylesheet" href="{% static 'regular_styles.css' %}">
+<link rel="stylesheet" href="{% static 'main_color_scheme.css' %}">
 <!DOCTYPE html>
 <html>
 <head>
     <title>{{ user.username }} Home Page</title>
 </head>
-<body>
-    <h1> Hello {{ user.first_name }}! </h1>
+<body class="background">
+    <h1 class="text"> Hello {{ user.first_name }}! </h1>
     {% if user_profile %}
-    <h2> Current total amount: ${{ user_profile.total_amount }}</h2>
+    <h2 class="text"> Current total amount: ${{ user_profile.total_amount }}</h2>
     {% endif %}
     <br>
     {% for p in user_parts %}
-    <a href="{% url 'users:partition' p.id %}" class="partition_wrap_link">
-        <div class="partition_wrap">
-            <p class="partition_label"> {{ p.label }} </p>
-            <p class="partition_amount"> ${{ p.current_amount }} </p>
+    <a href="{% url 'users:partition' p.id %}" class="partition_wrap_link text outline">
+        <div class="partition_wrap outline button_hover">
+            <p class="partition_label text"> {{ p.label }} </p>
+            <p class="partition_amount text"> ${{ p.current_amount }} </p>
         </div>
     </a>
     {% endfor %}
     <br>
-    <a href="{% url 'users:add_partition' %}" class="anchor_wrap"> Create a Partiton </a>
-    <a href="{% url 'users:get_bank' %}" class="anchor_wrap"> Get Bank Info </a>
-    <a href="{% url 'users:logout' %}" class="anchor_wrap"> Logout </a>
+    <a href="{% url 'users:add_partition' %}" class="anchor_wrap text outline button_hover"> Create a Partiton </a>
+    <a href="{% url 'users:get_bank' %}" class="anchor_wrap text outline button_hover"> Get Bank Info </a>
+    <a href="{% url 'users:logout' %}" class="anchor_wrap text outline button_hover"> Logout </a>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
 </body>
 </html>

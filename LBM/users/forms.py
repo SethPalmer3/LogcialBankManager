@@ -16,9 +16,10 @@ class SignUpForm(forms.ModelForm):
             raise forms.ValidationError('Passwords dont\'t match.')
         return cd['password2']
 
-class PartitionEditForm(forms.Form):
-    new_label = forms.CharField(label="New Partition Label", max_length=200)
-    new_amount = forms.FloatField(label="New Amount")
+class PartitionEditForm(forms.ModelForm):
+    class Meta:
+        model = Partition
+        fields = ['label', 'current_amount']
 
 class NewPartiton(forms.ModelForm):
     label = forms.CharField(label="Partiton Label", max_length=200)

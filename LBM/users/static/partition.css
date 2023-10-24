@@ -1,9 +1,5 @@
-body {
-    background-color: lightblue;
-}
 
 h1 {
-    color: darkblue;
     margin-left: 20px;
     margin-top: 30px;
     text-decoration: underline;
@@ -11,75 +7,6 @@ h1 {
     font-size: 40px;
 }
 
-/* a { */
-/*     text-align: center; */
-/*     text-decoration: none; */
-/* } */
-
-.partition_wrap_link{
-    display: inline-block;
-    text-decoration: none;
-    color: inherit;
-    vertical-align: top;
-}
-
-.partition_wrap {
-    display: inline-block;
-    border: 3px solid blue;
-    border-radius: 10px;
-    width: 15vw; 
-    height: 15vw;
-    padding: 5px;
-    vertical-align: top;
-    transition: background-color, scale 0.3s;
-    margin-left: 10px;
-}
-
-.partition_wrap:hover {
-  background-color: lightgrey;
-  scale: 105%;
-}
-
-.partition_wrap:active{
-  background-color: grey;
-}
-
-
-.partition_detail {
-    color: blue;
+.partition_details {
     font-size: 20px;
 }
-
-.anchor_wrap {
-    text-decoration: none;
-    display: inline-block;
-    vertical-align: middle;
-
-    font-size: 23px;
-    font-family: monospace;
-    text-align: center;
-    color: blue;
-
-    outline: blue solid 2px;
-    
-    margin-top: 30px;
-    margin-left: 20px;
-
-    padding: 10px;
-
-    transition: background-color, scale 0.3s;
-    cursor: pointer;
-    height: 5vw;
-
-    line-height: 5vw;
-}
-
-.anchor_wrap:hover {
-  background-color: lightgrey;
-  scale: 105%;
-}
-
-.anchor_wrap:active{
-  background-color: grey;
-}
-

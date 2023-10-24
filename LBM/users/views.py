@@ -1,4 +1,5 @@
-from django.shortcuts import Http404, HttpResponse, render, redirect, reverse
+from django.contrib import messages
+from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -8,11 +9,6 @@ import requests
 from .models import UserProfile, Partition
 from .forms import NewPartiton, SignUpForm, PartitionEditForm
 
-ABS_AMOUNT = 'amount'
-PART_NAME = 'parition_name'
-NA = 'NA'
-
-
 
 # Create your views here.
 def index(request):
@@ -21,7 +17,6 @@ def index(request):
 # Login page (initial page)
 def user_login(request):
     if request.user.is_authenticated:
-        print('authenticated ')
         return redirect(reverse('users:home'))
 
     if request.method == "POST":
@@ -29,10 +24,15 @@ def user_login(request):
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            login(request, user)
-            return redirect(reverse('users:home'))
+            if user.is_active:
+                login(request, user)
+                return redirect(reverse('users:home'))
+            else:
+                messages.error(request, "Account is inactive")
         else:
-            return render(request, 'login.html', {'error': 'Invalid Credentials'})
+            messages.error(request, "Invalid Credentials")
+            # return render(request, 'login.html', {'error': 'Invalid Credentials'})
+        return render(request, 'login.html')
 
     return render(request, 'login.html')
 
@@ -81,22 +81,28 @@ def user_home(request):
 
 @login_required
 def user_partition_view(request, partition_id):
-    part = Partition.objects.get(id=partition_id)
-    print(vars(part))
+    try:
+        part = Partition.objects.get(id=partition_id)
+    except:
+        print("Could not Find Partiton")
+        return redirect(reverse('users:home'))
     return render(request, 'partition.html', {'partition_data': part})
 
 @login_required
 def user_partition_edit(request, partition_id):
+    try:
+        part = Partition.objects.get(id=partition_id)
+    except Partition.DoesNotExist:
+        messages.error(request, "Could not find partition")
+        return redirect(reverse('users:home'))
+
     if request.method == "POST":
-        form = PartitionEditForm(request.POST)
+        form = PartitionEditForm(request.POST, instance=part)
         if form.is_valid():
-            part = Partition.objects.get(id=partition_id)
-            part.label = form.cleaned_data["new_label"]
-            part.current_amount = form.cleaned_data["new_amount"]
-            part.save()
+            form.save()
             return redirect('users:partition', partition_id=partition_id)
     else:
-        form = PartitionEditForm()
+        form = PartitionEditForm(instance=part)
 
     return render(request, "partition_edit.html", {'form': form, 'partition_id': partition_id})
 
@@ -115,20 +121,22 @@ def add_partition(request):
 
 @login_required
 def remove_partiton(request, partition_id):
-    Partition.objects.get(id=partition_id).delete()
+    try:
+        Partition.objects.get(id=partition_id).delete()
+    except:
+        messages.error(request, "Couldn\'t find partition")
+
     return redirect(reverse('users:home')) # Redirects to their new home screen
 
 def get_bank(request):
-    return Http404()
     if request.user:
         userprof = UserProfile.objects.filter(user=request.user).first()
-        response = requests.get('http://127.0.0.1:7000/account-holder/1/')
-        total = 0.0
-        for bank_acc in response.json()['bank_accounts']:
-            total += float(bank_acc['balance'])
-
-        userprof.total_amount = total
-        userprof.save()
-        print(response.json())
-        print(total)
-    return redirect(reverse('users:home')) # Redirects to their new home screen
+        try:
+            response = requests.get('http://127.0.0.1:7000/account-holder/1/')
+            response.raise_for_status()  # raises exception for 4xx and 5xx responses
+            total = sum(float(bank_acc['balance']) for bank_acc in response.json().get('bank_accounts', []))
+            userprof.total_amount = total
+            userprof.save()
+        except requests.RequestException:
+            messages.error(request, "Error fetching bank data")
+    return redirect(reverse('users:home'))

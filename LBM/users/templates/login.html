@@ -1,27 +1,31 @@
 {% load static %}
+<link rel="stylesheet" href="{% static 'main_color_scheme.css' %}">
+<link rel="stylesheet" href="{% static 'regular_styles.css' %}">
 <link rel="stylesheet" href="{% static 'login.css' %}">
 <!DOCTYPE html>
 <html>
 <head>
     <title>Login</title>
 </head>
-<body>
+<body class="background">
     <form method="post">
         {% csrf_token %}
         <div class="textual_input">
-          <input type="text" name="username" class="text_input", placeholder="Username"><br><br>
+          <input type="text" name="username" class="text_input text outline", placeholder="Username"><br><br>
         </div>
         <div class="textual_input">
-          <input type="password" name="password" class="text_input" placeholder="Password"><br><br>
+          <input type="password" name="password" class="text_input text outline" placeholder="Password"><br><br>
         </div>
-        <input type="submit" value="Login">
+        <input type="submit" value="Login" class="text outline button_like button_hover">
     </form>
-    <div class="anchor_wrap">
-      <a href="{% url 'users:signup' %}"> Sign Up </a>
-    </div>
+    <a href="{% url 'users:signup' %}" class="signup anchor_wrap text outline button_hover"> Sign Up </a>
     <br>
-    {% if error %}
-    <p class="error">{{ error }}</p>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
     {% endif %}
 </body>
 </html>

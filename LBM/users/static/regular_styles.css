@@ -1,0 +1,46 @@
+.anchor_wrap {
+    text-decoration: none;
+    display: inline-block;
+    vertical-align: middle;
+
+    font-size: 23px;
+    font-family: monospace;
+    text-align: center;
+
+    outline-style: solid;
+    outline-width: 2px;
+    
+    margin-top: 30px;
+    margin-left: 20px;
+
+    padding: 10px;
+
+    transition: background-color, scale 0.3s;
+    cursor: pointer;
+    height: 5vw;
+
+    line-height: 5vw;
+}
+
+.anchor_wrap:hover {
+  scale: 105%;
+}
+
+.anchor_wrap:active{
+  background-color: grey;
+}
+
+.button_like {
+    outline-width: 2px;
+    outline-style: solid;
+    transition: background-color, scale 0.3s;
+    cursor: pointer;
+}
+
+.button_like:hover{
+    scale:105%;
+}
+
+.button_like:active{
+    background-color:grey;
+}
