@@ -8,6 +8,12 @@ import requests
 from .models import UserProfile, Partition
 from .forms import NewPartiton, SignUpForm, PartitionEditForm
 
+ABS_AMOUNT = 'amount'
+PART_NAME = 'parition_name'
+NA = 'NA'
+
+
+
 # Create your views here.
 def index(request):
     return redirect(reverse('users:login'))
