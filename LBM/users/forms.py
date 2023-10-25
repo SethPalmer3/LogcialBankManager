@@ -27,3 +27,5 @@ class NewPartiton(forms.ModelForm):
     class Meta:
         model = Partition
         fields = ['label', 'current_amount']
+
+

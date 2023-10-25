@@ -1,0 +1,15 @@
+<!-- login.html -->
+<html>
+    <body>
+        <form id="loginForm" action="{% url 'banking:login_check' %}" method="post">
+        {% csrf_token %}
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username">
+        <br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password">
+        <br>
+        <input type="submit" value="Login">
+    </form>
+    </body>
+</html>

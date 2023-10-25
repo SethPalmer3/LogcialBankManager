@@ -2,6 +2,7 @@
 <link rel="stylesheet" href="{% static 'home.css' %}">
 <link rel="stylesheet" href="{% static 'regular_styles.css' %}">
 <link rel="stylesheet" href="{% static 'main_color_scheme.css' %}">
+<script src="{% static 'popup.js' %}"></script>
 <!DOCTYPE html>
 <html>
 <head>
@@ -23,8 +24,10 @@
     {% endfor %}
     <br>
     <a href="{% url 'users:add_partition' %}" class="anchor_wrap text outline button_hover"> Create a Partiton </a>
-    <a href="{% url 'users:get_bank' %}" class="anchor_wrap text outline button_hover"> Get Bank Info </a>
+    <!-- <a href="{% url 'users:get_bank' %}" class="anchor_wrap text outline button_hover"> Get Bank Info </a> -->
+    <button onclick="openLoginPopup()" class="text outline button_hover button_like"> Login to Bank</button>
     <a href="{% url 'users:logout' %}" class="anchor_wrap text outline button_hover"> Logout </a>
+
     {% if messages %}
     <ul class="messages">
         {% for message in messages %}

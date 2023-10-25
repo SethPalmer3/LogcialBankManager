@@ -1,16 +1,31 @@
+from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.exceptions import status
 from rest_framework.response import Response
-from django.shortcuts import render
-from rest_framework import generics
+from django.shortcuts import redirect, render
+from rest_framework import generics, viewsets
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 
-from .serializers import AccountHolderSerializer
+from .serializers import AccountHolderSerializer, UserSerializer
 
 from .models import AccountHolder
 
 from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
+
+default_url = 'http://127.0.0.1:8000'
+
+def get_token(user):
+    try:
+        token = Token.objects.get(user=user)
+        token.delete()
+    except Token.DoesNotExist:
+        pass
+
+    token, created = Token.objects.get_or_create(user=user)
+    return token
+
 
 class IsOwner(BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -32,13 +47,7 @@ class ObatinAuthToken(APIView):
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
-            try:
-                token = Token.objects.get(user=user)
-                token.delete()
-            except Token.DoesNotExist:
-                pass
-
-            token, created = Token.objects.get_or_create(user=user)
+            token = get_token(user)
             accholder = user.account_holder
 
             return Response({
@@ -48,3 +57,58 @@ class ObatinAuthToken(APIView):
 
         else:
             return Response({"error": "Invalid Credentials"}, status=status.HTTP_400_BAD_REQUEST)
+
+class LoginView(APIView):
+    '''
+    View to handle user login and return an auth token
+    '''
+    permission_classes = [AllowAny]
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        user = authenticate(username=username, password=password)
+
+        if user is not None:
+            token = get_token(user)
+            accholder = user.account_holder
+            return Response({'token': token.key, 'user_id': accholder.id})
+        else:
+            return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+class UserLogin(ObtainAuthToken):
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data,
+                                           context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        accholder = user.account_holder
+        token = Token.objects.get(user=user)
+        return Response({
+            'token': token.key,
+            'user_id': accholder.id
+        })
+
+def login_page(request):
+    return render(request, 'login.html')
+
+
+def login_check(request):
+    if request.method == "POST":
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            token = get_token(user)
+            accholder = user.account_holder
+            next_url = request.POST.get('next', default_url)
+            redirect_url = f"{next_url}/login_success/?token={token.key}&user_id={accholder.id}"
+            return redirect(redirect_url)
+    return render(request, 'login.html')

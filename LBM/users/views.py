@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.http import response
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -128,19 +129,34 @@ def remove_partiton(request, partition_id):
 
     return redirect(reverse('users:home')) # Redirects to their new home screen
 
+def login_success(request):
+    token = request.GET.get('token')
+    if token:
+        userprof = UserProfile.objects.filter(user=request.user).first()
+        headers = {
+            'Authorization': 'Token ' + request.GET.get('token')
+        }
+        response = requests.get(f'http://127.0.0.1:7000/account-holder/{request.GET.get("user_id")}/', headers=headers)
+        print(response.json())
+        response.raise_for_status()  # raises exception for 4xx and 5xx responses
+        total = sum(float(bank_acc['balance']) for bank_acc in response.json().get('bank_accounts', []))
+        userprof.total_amount = total
+        userprof.save()
+    return render(request, 'login.html')
+
+
 def get_bank(request):
+    '''
+    Actually retreiving bank info
+    '''
     if request.user:
         userprof = UserProfile.objects.filter(user=request.user).first()
         try:
-            data = {
-                'username': 'test',
-                'password': 'tester999'
-            }
-            rep = requests.post('http://127.0.0.1:7000/api-token-auth/', data=data)
             headers = {
-                'Authorization': 'Token ' + rep.json()['token']
+                'Authorization': 'Token ' + request.GET.get('token')
             }
-            response = requests.get(f'http://127.0.0.1:7000/account-holder/{rep.json()["user_id"]}/', headers=headers)
+            response = requests.get(f'http://127.0.0.1:7000/account-holder/{request.GET.get("user_id")}/', headers=headers)
+            print(response.json())
             response.raise_for_status()  # raises exception for 4xx and 5xx responses
             total = sum(float(bank_acc['balance']) for bank_acc in response.json().get('bank_accounts', []))
             userprof.total_amount = total

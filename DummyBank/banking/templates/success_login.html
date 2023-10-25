@@ -1,0 +1,15 @@
+
+<html>
+<head>
+    <script>
+        // Notify the main window
+        window.opener.postMessage('login_successful', '*');
+
+        // Close the popup
+        window.close();
+    </script>
+</head>
+<body>
+    Login successful! This window will close shortly.
+</body>
+</html>

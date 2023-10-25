@@ -14,5 +14,6 @@ urlpatterns = [
     path('partitionedit/<uuid:partition_id>/', views.user_partition_edit, name='edit_partition'),
     path('addpartition/', views.add_partition, name='add_partition'),
     path('removepartition/<uuid:partition_id>/', views.remove_partiton, name='remove_partition'),
-    path('get_bank/', views.get_bank, name='get_bank')
+    path('get_bank/', views.get_bank, name='get_bank'),
+    path('login_success/', views.login_success, name='login_success')
 ] 
