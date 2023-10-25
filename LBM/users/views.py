@@ -132,11 +132,19 @@ def get_bank(request):
     if request.user:
         userprof = UserProfile.objects.filter(user=request.user).first()
         try:
-            response = requests.get('http://127.0.0.1:7000/account-holder/1/')
+            data = {
+                'username': 'test',
+                'password': 'tester999'
+            }
+            rep = requests.post('http://127.0.0.1:7000/api-token-auth/', data=data)
+            headers = {
+                'Authorization': 'Token ' + rep.json()['token']
+            }
+            response = requests.get(f'http://127.0.0.1:7000/account-holder/{rep.json()["user_id"]}/', headers=headers)
             response.raise_for_status()  # raises exception for 4xx and 5xx responses
             total = sum(float(bank_acc['balance']) for bank_acc in response.json().get('bank_accounts', []))
             userprof.total_amount = total
             userprof.save()
-        except requests.RequestException:
-            messages.error(request, "Error fetching bank data")
+        except requests.RequestException as e:
+            messages.error(request, f"Error fetching bank data: {e}")
     return redirect(reverse('users:home'))

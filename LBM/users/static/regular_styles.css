@@ -17,9 +17,9 @@
 
     transition: background-color, scale 0.3s;
     cursor: pointer;
-    height: 5vw;
+    height: 5vh;
 
-    line-height: 5vw;
+    line-height: 5vh;
 }
 
 .anchor_wrap:hover {

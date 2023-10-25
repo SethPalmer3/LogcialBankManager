@@ -7,11 +7,6 @@ h1 {
     font-size: 40px;
 }
 
-/* a { */
-/*     text-align: center; */
-/*     text-decoration: none; */
-/* } */
-
 .partition_wrap_link{
     display: inline-block;
     text-decoration: none;
@@ -25,8 +20,8 @@ h1 {
     border-width: 3px;
     border-style: solid;
     border-radius: 10px;
-    width: 17vw; 
-    height: 17vw;
+    width: 20vh; 
+    height: 20vh;
     padding: 5px;
     vertical-align: top;
     transition: background-color, scale 0.3s;
