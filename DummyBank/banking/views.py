@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.exceptions import status
@@ -8,7 +7,7 @@ from rest_framework import generics, viewsets
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 
-from .serializers import AccountHolderSerializer, UserSerializer
+from .serializers import AccountHolderSerializer
 
 from .models import AccountHolder
 
@@ -76,24 +75,6 @@ class LoginView(APIView):
         else:
             return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
-
-class UserLogin(ObtainAuthToken):
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data,
-                                           context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        accholder = user.account_holder
-        token = Token.objects.get(user=user)
-        return Response({
-            'token': token.key,
-            'user_id': accholder.id
-        })
 
 def login_page(request):
     return render(request, 'login.html')
