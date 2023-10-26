@@ -44,3 +44,9 @@
 .button_like:active{
     background-color:grey;
 }
+
+.button {
+    background-color: inherit;
+    line-height: 0vh;
+    border-width: 0px;
+}
