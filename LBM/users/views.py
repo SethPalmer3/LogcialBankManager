@@ -7,8 +7,11 @@ from django.db import transaction
 
 import requests
 
+
 from .models import UserProfile, Partition
 from .forms import NewPartiton, SignUpForm, PartitionEditForm
+
+from .helper_funcs import *
 
 
 # Create your views here.
@@ -54,11 +57,7 @@ def user_signup(request):
                     profile = UserProfile() # Custom user information
                     profile.user = user
                     profile.save()
-                    first_parition = Partition.objects.create()
-                    first_parition.owner.add(user)
-                    first_parition.label = "Undefined"
-                    first_parition.current_amount = 0.0
-                    first_parition.save()
+                    create_partition(user)
 
                 login(request, user) # Persistant login of user
                 return redirect(reverse('users:home')) # Redirects to their new home screen
@@ -73,11 +72,31 @@ def user_signup(request):
 
 @login_required
 def user_home(request):
-    if request.user is None:
-        print('User does not exist')
+    if request.user is None or not request.user.is_authenticated:
         return redirect(reverse('users:login'))
     partitons = Partition.objects.filter(owner=request.user)
     userprof = UserProfile.objects.filter(user=request.user).first()
+    diff = check_partitions(partitons, request.user)
+    if diff > 0.0:
+        if Partition.objects.filter(label="Unallocated").first():
+            part = Partition.objects.filter(label="Unallocated").first()
+            part.current_amount = diff
+            part.save()
+        else:
+            create_partition(request.user, "Unallocated", diff)
+    elif diff < 0.0:
+        part = Partition.objects.filter(label="Unallocated").first()
+        if part:
+            if part.current_amount + diff >= 0.0:
+                part.current_amount += diff
+                part.save()
+            else:
+                part.delete()
+                messages.error(request, f"Over allocated balance by {abs(diff)}")
+        else:
+            messages.error(request, f"Over allocated balance by {abs(diff)}")
+
+
     return render(request, 'home.html', {'user_parts': partitons, 'user_profile': userprof})
 
 @login_required
@@ -85,7 +104,7 @@ def user_partition_view(request, partition_id):
     try:
         part = Partition.objects.get(id=partition_id)
     except:
-        print("Could not Find Partiton")
+        messages.error(request, "Could Not Find Partition")
         return redirect(reverse('users:home'))
     return render(request, 'partition.html', {'partition_data': part})
 
@@ -94,7 +113,7 @@ def user_partition_edit(request, partition_id):
     try:
         part = Partition.objects.get(id=partition_id)
     except Partition.DoesNotExist:
-        messages.error(request, "Could not find partition")
+        messages.error(request, "Could Not Find partition")
         return redirect(reverse('users:home'))
 
     if request.method == "POST":
