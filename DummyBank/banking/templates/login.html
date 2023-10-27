@@ -1,4 +1,6 @@
 <!-- login.html -->
+{% load static %}
+<script src="{% static 'popup.js' %}"></script>
 <html>
     <body>
         <form id="loginForm" action="{% url 'banking:login_check' %}" method="post">

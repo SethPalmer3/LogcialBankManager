@@ -70,7 +70,7 @@ def user_signup(request):
         form = SignUpForm()
     return render(request, 'signup.html', {'form': form})
 
-@login_required
+@login_required(login_url="/login/")
 def user_home(request):
     if request.user is None or not request.user.is_authenticated:
         return redirect(reverse('users:login'))
@@ -92,14 +92,14 @@ def user_home(request):
                 part.save()
             else:
                 part.delete()
-                messages.error(request, f"Over allocated balance by {abs(diff)}")
+                messages.error(request, f"Over allocated balance by ${abs(diff)}")
         else:
-            messages.error(request, f"Over allocated balance by {abs(diff)}")
+            messages.error(request, f"Over allocated balance by ${abs(diff)}")
 
 
     return render(request, 'home.html', {'user_parts': partitons, 'user_profile': userprof})
 
-@login_required
+@login_required(login_url="/login/")
 def user_partition_view(request, partition_id):
     try:
         part = Partition.objects.get(id=partition_id)
@@ -108,7 +108,7 @@ def user_partition_view(request, partition_id):
         return redirect(reverse('users:home'))
     return render(request, 'partition.html', {'partition_data': part})
 
-@login_required
+@login_required(login_url="/login/")
 def user_partition_edit(request, partition_id):
     try:
         part = Partition.objects.get(id=partition_id)
@@ -126,7 +126,7 @@ def user_partition_edit(request, partition_id):
 
     return render(request, "partition_edit.html", {'form': form, 'partition_id': partition_id})
 
-@login_required
+@login_required(login_url="/login/")
 def add_partition(request):
     if request.method == "POST":
         form = NewPartiton(request.POST)
@@ -139,7 +139,7 @@ def add_partition(request):
         form = NewPartiton()
     return render(request, "add_partition.html", {'form': form})
 
-@login_required
+@login_required(login_url="/login/")
 def remove_partiton(request, partition_id):
     try:
         Partition.objects.get(id=partition_id).delete()

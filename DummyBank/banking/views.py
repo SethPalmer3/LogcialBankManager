@@ -1,17 +1,19 @@
 from rest_framework.authtoken.models import Token
-from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.exceptions import status
 from rest_framework.response import Response
-from django.shortcuts import redirect, render
-from rest_framework import generics, viewsets
+from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
+from rest_framework import generics, serializers
 from rest_framework.views import APIView
+
+from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
 
 from .serializers import AccountHolderSerializer
 
 from .models import AccountHolder
 
-from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
+from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope, TokenHasScope
 
 default_url = 'http://127.0.0.1:8000'
 
@@ -56,6 +58,21 @@ class ObatinAuthToken(APIView):
 
         else:
             return Response({"error": "Invalid Credentials"}, status=status.HTTP_400_BAD_REQUEST)
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'email', "first_name", "last_name")
+
+class UserList(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated, TokenHasReadWriteScope]
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+class UserDetails(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated, TokenHasReadWriteScope]
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 class LoginView(APIView):
     '''
