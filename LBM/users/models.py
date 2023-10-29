@@ -20,3 +20,15 @@ class Partition(models.Model):
     objects = models.Manager()
     def __str__(self):
         return self.label
+
+class ExternalWebApp(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    client_key = models.CharField(max_length=200)
+    secret_key = models.CharField(max_length=200)
+    objects = models.Manager()
+
+    def __str__(self) -> str:
+        return self.name
+

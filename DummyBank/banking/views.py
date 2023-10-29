@@ -5,11 +5,11 @@ from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
 from rest_framework import generics, serializers
 from rest_framework.views import APIView
 
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 
-from .serializers import AccountHolderSerializer
+from .serializers import AccountHolderSerializer, UserSerializer
 
 from .models import AccountHolder
 
@@ -59,22 +59,35 @@ class ObatinAuthToken(APIView):
         else:
             return Response({"error": "Invalid Credentials"}, status=status.HTTP_400_BAD_REQUEST)
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('username', 'email', "first_name", "last_name")
 
 class UserList(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated, TokenHasReadWriteScope]
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserSerializer 
 
 class UserDetails(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated, TokenHasReadWriteScope]
-    queryset = User.objects.all()
     serializer_class = UserSerializer
-    def username_view(self, username):
-        pass
+
+    def get_object(self):
+        if not self.request.user.is_authenticated:
+            return None
+
+        # queryset = self.get_queryset()
+        # filter_kwargs = {}
+        # if 'pk' in self.kwargs:
+        #     filter_kwargs['pk'] = self.kwargs['pk']
+        # elif 'username' in self.kwargs:
+        #     filter_kwargs['username'] = self.kwargs['username']
+        # obj = get_object_or_404(queryset, **filter_kwargs)
+
+        obj = get_object_or_404(User, pk=self.request.user.pk)
+
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+    def get_queryset(self):
+        return User.objects.all()
 
 class LoginView(APIView):
     '''

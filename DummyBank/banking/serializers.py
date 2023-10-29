@@ -14,3 +14,9 @@ class AccountHolderSerializer(serializers.ModelSerializer):
     class Meta:
         model = AccountHolder
         fields = ['name', 'bank_accounts']
+
+class UserSerializer(serializers.ModelSerializer):
+    account_holder = AccountHolderSerializer()
+    class Meta:
+        model = User
+        fields = ['username', 'email', "first_name", "last_name", "account_holder"]

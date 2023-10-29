@@ -11,7 +11,7 @@ urlpatterns = [
     path('login/', login_page, name='login_page'),
     path('login-check/', login_check, name='login_check'),
     path('users/', UserList.as_view(), name='user_list'),
-    path('users/<int:pk>/', UserDetails.as_view(), name='user_primary'),
-    path('users/<str:username>/', UserDetails.as_view(), name='user_username'),
-
+    path('users/me/', UserDetails.as_view(), name='user'),
+    # path('users/<int:pk>/', UserDetails.as_view(), name='user_primary'),
+    # path('users/<str:username>/', UserDetails.as_view(), name='user_username'),
 ]

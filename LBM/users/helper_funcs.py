@@ -20,9 +20,10 @@ def check_partitions( partitons: QuerySet, user=None, total_amount = 0.0):
     if user is None:
         return total_amount - total
     userprof = UserProfile.objects.filter(user=user).first()
-    if userprof.total_amount is None:
+    try:
+        return userprof.total_amount - total
+    except:
         return 0.0
-    return userprof.total_amount - total
 
 def create_partition(owner, label="Undefined", amount = 0.0):
     """
