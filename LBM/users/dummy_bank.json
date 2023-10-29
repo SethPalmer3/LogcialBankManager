@@ -1,0 +1,21 @@
+{
+    "get_credentials": {
+        "method": "POST",
+        "url": "http://127.0.0.1:7000/o/token/",
+        "headers": {
+            "grant_type": {
+                "password": "",
+                "username": ""
+            },
+            "scope": "read",
+            "creds": {
+                "client": null,
+                "secret": null
+            }
+        }
+    },
+    "get_accounts": {
+        "method": "GET",
+        "url": "http://127.0.0.1:7000/users/me/"
+    }
+}

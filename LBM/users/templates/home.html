@@ -11,9 +11,7 @@
 <body class="background">
     <h1 class="text"> Hello {{ user.first_name }}! </h1>
     {% if user_profile %}
-        {% if user.user_profile.total_amount %}
-            <h2 class="text"> Current total amount: ${{ user_profile.total_amount }}</h2>
-        {% endif %}
+    <h2 class="text"> Current total amount: ${{ user_profile.total_amount }}</h2>
     {% endif %}
     <br>
     {% for p in user_parts %}
@@ -26,7 +24,8 @@
     {% endfor %}
     <br>
     <a href="{% url 'users:add_partition' %}" class="anchor_wrap text outline button_hover"> Create a Partiton </a>
-    <button onclick="openLoginPopup()" class="anchor_wrap outline background text button_hover button"> Login to Bank</button>
+    <!-- <button onclick="openLoginPopup()" class="anchor_wrap outline background text button_hover button"> Login to Bank</button> -->
+    <a href="{% url 'users:get_bank' %}" class="anchor_wrap text outline button_hover"> Bank Login </a>
     <a href="{% url 'users:logout' %}" class="anchor_wrap text outline button_hover"> Logout </a>
 
     {% if messages %}

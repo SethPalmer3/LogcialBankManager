@@ -8,7 +8,7 @@ from django.db import transaction
 import requests
 
 
-from .models import UserProfile, Partition
+from .models import ExternalWebApp, UserProfile, Partition
 from .forms import NewPartiton, SignUpForm, PartitionEditForm
 
 from .helper_funcs import *
@@ -148,38 +148,38 @@ def remove_partiton(request, partition_id):
 
     return redirect(reverse('users:home')) # Redirects to their new home screen
 
-def login_success(request):
-    token = request.GET.get('token')
-    if token:
-        userprof = UserProfile.objects.filter(user=request.user).first()
-        headers = {
-            'Authorization': 'Token ' + request.GET.get('token')
-        }
-        response = requests.get(f'http://127.0.0.1:7000/account-holder/{request.GET.get("user_id")}/', headers=headers)
-        print(response.json())
-        response.raise_for_status()  # raises exception for 4xx and 5xx responses
-        total = sum(float(bank_acc['balance']) for bank_acc in response.json().get('bank_accounts', []))
-        userprof.total_amount = total
-        userprof.save()
-    return render(request, 'login.html')
-
-
 def get_bank(request):
     '''
     Actually retreiving bank info
     '''
-    if request.user:
-        userprof = UserProfile.objects.filter(user=request.user).first()
+    if request.session['bank_credentials']:
+        account_info = request_bank_accounts("Dummy Bank", request.session['bank_credentials'])
+        # TODO: Take care of exception when token expires
+        if account_info is None or account_info.status_code != 200:
+            messages.error(request, 'Failed to retrieve accounts')
+            return render(request, 'bank_login.html')
+
+        update_user_profile(account_info, request, messages)
+        return redirect(reverse('users:home'))
+    elif request.method == "POST":
         try:
-            headers = {
-                'Authorization': 'Token ' + request.GET.get('token')
-            }
-            response = requests.get(f'http://127.0.0.1:7000/account-holder/{request.GET.get("user_id")}/', headers=headers)
-            print(response.json())
-            response.raise_for_status()  # raises exception for 4xx and 5xx responses
-            total = sum(float(bank_acc['balance']) for bank_acc in response.json().get('bank_accounts', []))
-            userprof.total_amount = total
-            userprof.save()
+            userprof = UserProfile.objects.filter(user=request.user).first()
+            credentials = request_bank_info("Dummy Bank", request.POST['username'], request.POST['password'])
+            if credentials is None or credentials.status_code != 200:
+                messages.error(request, 'Failed to log into Bank')
+                return render(request, 'bank_login.html')
+            cred_details = credentials.json()
+            request.session['bank_credentials'] = cred_details
+            messages.success(request, "Successfully logged into bank")
+
+            account_info = request_bank_accounts("Dummy Bank", cred_details)
+            if account_info is None or account_info.status_code != 200:
+                messages.error(request, 'Failed to retrieve accounts')
+                return render(request, 'bank_login.html')
+
+            update_user_profile(account_info, request, messages)
+            return redirect(reverse('users:home'))
+
         except requests.RequestException as e:
             messages.error(request, f"Error fetching bank data: {e}")
-    return redirect(reverse('users:home'))
+    return render(request, 'bank_login.html')

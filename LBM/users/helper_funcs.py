@@ -1,5 +1,9 @@
 from django.db.models import QuerySet
-from .models import Partition, UserProfile
+from django.shortcuts import redirect
+from django.urls import reverse
+import requests
+from requests.auth import HTTPBasicAuth
+from .models import ExternalWebApp, Partition, UserProfile
 
 def check_partitions( partitons: QuerySet, user=None, total_amount = 0.0):
     """
@@ -47,3 +51,48 @@ def get_UserProfile(user):
     Returns the associated user profile model
     """
     return UserProfile.objects.filter(user=user).first()
+
+def request_bank_info(name, username, password):
+    bank = ExternalWebApp.objects.filter(name=name).first()
+    if bank is not None:
+        request_obj = bank.get_bank_account
+        req_creds = request_obj['get_credentials']
+        data = {
+                'grant_type': 'password',
+                'username': username,
+                'password': password,
+                }
+        response = requests.post(
+            req_creds['url'],
+            data=data,
+            auth=HTTPBasicAuth(bank.client_key, bank.secret_key)
+        )
+        return response
+    return None
+
+def request_bank_accounts(name, response_obj):
+    bank = ExternalWebApp.objects.filter(name=name).first()
+    if bank is not None:
+        request_obj = bank.get_bank_account['get_accounts']
+        headers = {
+            'Authorization': f"{response_obj['token_type']} {response_obj['access_token']}",
+        }
+        response = requests.get(request_obj['url'], headers=headers)
+        return response
+    return None
+
+def update_user_profile(account_info, request, messages):
+    accounts = account_info.json()['account_holder']['bank_accounts']
+    total = 0.0
+    for acc in accounts:
+        total += float(acc['balance'])
+
+    userprof = get_UserProfile(request.user)
+    if userprof is None:
+        messages.error(request, 'User Profile does not exist')
+        return None
+
+    userprof.total_amount = total
+    userprof.save()
+    messages.success(request, "Successfully updated user profile total")
+    return None
