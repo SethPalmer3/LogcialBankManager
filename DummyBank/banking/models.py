@@ -14,6 +14,8 @@ class AccountHolder(models.Model):
     user = models.OneToOneField(to=User, primary_key=False, on_delete=models.CASCADE, related_name="account_holder", null=True)
     def get_queryset(self):
         return AccountHolder.objects.all()
+    def __str__(self) -> str:
+        return self.user.username
 
 class BankAccount(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

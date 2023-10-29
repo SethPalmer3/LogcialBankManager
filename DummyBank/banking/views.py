@@ -73,6 +73,8 @@ class UserDetails(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated, TokenHasReadWriteScope]
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    def username_view(self, username):
+        pass
 
 class LoginView(APIView):
     '''
