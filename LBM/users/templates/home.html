@@ -11,7 +11,9 @@
 <body class="background">
     <h1 class="text"> Hello {{ user.first_name }}! </h1>
     {% if user_profile %}
-    <h2 class="text"> Current total amount: ${{ user_profile.total_amount }}</h2>
+        {% if user.user_profile.total_amount %}
+            <h2 class="text"> Current total amount: ${{ user_profile.total_amount }}</h2>
+        {% endif %}
     {% endif %}
     <br>
     {% for p in user_parts %}
