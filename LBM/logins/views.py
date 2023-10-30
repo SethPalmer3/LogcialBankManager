@@ -65,24 +65,18 @@ def get_bank(request):
     '''
     Actually retreiving bank info
     '''
-    if request.method == "POST":
-        print(vars(request.session))
-        if 'bank_credentials' in vars(request.session):
-            print(request.session['bank_credentials'])
-            account_info = request_bank_accounts("Dummy Bank", request.session['bank_credentials'])
-            # TODO: Take care of exception when token expires
-            if account_info is None:
-                messages.error(request, f'Failed to retrieve accounts')
-                return render(request, 'bank_login.html')
-            elif account_info.status_code == 401:
-                return bank_login_form_sequence(request, messages)
-
-            elif account_info.status_code != 200:
-                messages.error(request, f'Failed to retrieve accounts code: {account_info.status_code}')
-                return render(request, 'bank_login.html')
-            update_user_profile(account_info, request, messages)
-            return redirect(reverse('users:home'))
-        else:
+    if request.session['bank_credentials']:
+        account_info = request_bank_accounts("Dummy Bank", request.session['bank_credentials'])
+        if account_info is None:
+            messages.error(request, f'Failed to retrieve accounts')
+            return render(request, 'bank_login.html')
+        elif account_info.status_code == 401:
+            # TODO: Refresh token before token expires
             return bank_login_form_sequence(request, messages)
+        elif account_info.status_code != 200:
+            messages.error(request, f'Failed to retrieve accounts code: {account_info.status_code}')
+            return render(request, 'bank_login.html')
+        update_user_profile(account_info, request, messages)
+        return redirect(reverse('users:home'))
     else:
         return render(request, 'bank_login.html')
