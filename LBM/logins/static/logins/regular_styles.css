@@ -50,3 +50,25 @@
     line-height: 0vh;
     border-width: 0px;
 }
+
+.inputs {
+    height: 40px;
+    padding: 20px;
+
+    color: #704F70;
+    background-color: inherit;
+    border-width: 3px;
+    border-radius: 10px;
+    border-color: #333652;
+
+    left: 20px;
+    font-size: 23px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 10px;
+
+    margin-left: 20px;
+}

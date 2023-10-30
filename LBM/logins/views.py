@@ -68,7 +68,7 @@ def get_bank(request):
     Actually retreiving bank info
     '''
     print(vars(request.session))
-    if request.session['bank_credentials']:
+    if 'bank_credentials' in request.session:
         account_info = request_bank_accounts("Dummy Bank", request.session['bank_credentials'])
         if account_info is None:
             messages.error(request, f'Failed to retrieve accounts')
