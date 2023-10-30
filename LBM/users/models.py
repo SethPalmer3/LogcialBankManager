@@ -14,6 +14,7 @@ class UserProfile(models.Model):
 
 class Partition(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    is_unallocated = models.BooleanField(default=False)
     owner = models.ManyToManyField(User)
     label = models.CharField(max_length=200)
     current_amount = models.DecimalField(max_digits=20,decimal_places=2, default=0.0)

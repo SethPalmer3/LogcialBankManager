@@ -15,12 +15,13 @@ def index(request):
 @login_required(login_url="/login/")
 def user_home(request):
     if request.user is None or not request.user.is_authenticated:
-        return redirect(reverse('users:login'))
+        return redirect(reverse('logins:login'))
     partitons = Partition.objects.filter(owner=request.user)
     userprof = UserProfile.objects.filter(user=request.user).first()
     diff = check_partitions(partitons, request.user)
+    print(diff)
     if diff > 0.0:
-        part = Partition.objects.filter(label="Unallocated").first()
+        part = Partition.objects.filter(is_unallocated=True).first()
         if part is not None:
             part.current_amount = diff
             part.save()
@@ -37,8 +38,6 @@ def user_home(request):
                 messages.error(request, f"Over allocated balance by ${abs(diff)}")
         else:
             messages.error(request, f"Over allocated balance by ${abs(diff)}")
-
-
     return render(request, 'home.html', {'user_parts': partitons, 'user_profile': userprof})
 
 @login_required(login_url="/login/")

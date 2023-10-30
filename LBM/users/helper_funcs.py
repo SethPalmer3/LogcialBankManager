@@ -19,7 +19,8 @@ def check_partitions( partitons: QuerySet, user=None, total_amount = 0.0):
         return 0.0
     total = 0
     for p in partitons:
-        total += p.current_amount
+        if p.is_unallocated:
+            total += p.current_amount
 
     if user is None:
         return total_amount - total
