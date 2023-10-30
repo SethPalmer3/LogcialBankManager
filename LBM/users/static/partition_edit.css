@@ -10,6 +10,8 @@ input[type="submit"]{
 input[type="text"], input[type="number"] {
     height: 40px;
     padding: 20px;
+    
+    line-height: 5vh;
 
     color: #704F70;
     background-color: inherit;

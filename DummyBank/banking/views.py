@@ -1,9 +1,5 @@
-# from rest_framework.authtoken.models import Token
-# from rest_framework.exceptions import status
-# from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
 from rest_framework import generics
-# from rest_framework.views import APIView
 
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import authenticate
@@ -15,17 +11,6 @@ from .serializers import  UserSerializer
 
 from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope
 
-
-# class IsOwner(BasePermission):
-#     def has_object_permission(self, request, view, obj):
-#         has_perms = obj.user == request.user
-#         return has_perms
-
-# Create your views here.
-# class AccountHolderDetail(generics.RetrieveAPIView):
-#     queryset = AccountHolder.objects.all()
-#     serializer_class = AccountHolderSerializer
-#     permission_classes = [IsAuthenticated, IsOwner]
 
 class UserList(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated, TokenHasReadWriteScope]

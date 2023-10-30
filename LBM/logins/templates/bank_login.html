@@ -1,7 +1,6 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'logins/main_color_scheme.css' %}">
 <link rel="stylesheet" href="{% static 'logins/regular_styles.css' %}">
-<!-- <link rel="stylesheet" href="{% static 'bank_login.css' %}"> -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -14,9 +13,9 @@
           <input type="text" name="username" class="inputs", placeholder="Username"><br><br>
         </div>
         <div class="textual_input">
-          <input type="password" name="password" class="inputs" placeholder="Password"><br><br>
+          <input type="password" name="password" class="outline text inputs" placeholder="Password"><br><br>
         </div>
-        <input type="submit" value="Login" class="text outline button_like button_hover">
+        <input type="submit" value="Login" class="anchor_wrap text outline background button_hover button">
     </form>
     <a href="{% url 'users:home' %}" class="signup anchor_wrap text outline button_hover"> Cancel </a>
     <br>
