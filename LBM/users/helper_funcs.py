@@ -24,9 +24,9 @@ def check_partitions( partitons: QuerySet, user=None, total_amount = 0.0):
     if user is None:
         return total_amount - total
     userprof = UserProfile.objects.filter(user=user).first()
-    try:
+    if userprof is not None:
         return userprof.total_amount - total
-    except:
+    else:
         return 0.0
 
 def create_partition(owner, label="Undefined", amount = 0.0):
@@ -53,6 +53,9 @@ def get_UserProfile(user):
     return UserProfile.objects.filter(user=user).first()
 
 def request_bank_info(name, username, password):
+    """
+    Make a web request to bank to get credentials
+    """
     bank = ExternalWebApp.objects.filter(name=name).first()
     if bank is not None:
         request_obj = bank.get_bank_account
@@ -71,6 +74,9 @@ def request_bank_info(name, username, password):
     return None
 
 def request_bank_accounts(name, response_obj):
+    """
+    Make a web request to bank to get bank account information
+    """
     bank = ExternalWebApp.objects.filter(name=name).first()
     if bank is not None:
         request_obj = bank.get_bank_account['get_accounts']
@@ -82,6 +88,10 @@ def request_bank_accounts(name, response_obj):
     return None
 
 def update_user_profile(account_info, request, messages):
+    """
+    From account_info which holds bank account information. 
+    Update the total amount the user can partition
+    """
     accounts = account_info.json()['account_holder']['bank_accounts']
     total = 0.0
     for acc in accounts:
@@ -97,9 +107,12 @@ def update_user_profile(account_info, request, messages):
     messages.success(request, "Successfully updated user profile total")
     return None
 
-def bank_info_sequence(request, messages):
+def bank_login_form_sequence(request, messages):
+    """
+    Makes a request to bank to get credentials from login form.
+    On success, stores the credentials in session
+    """
     try:
-        userprof = UserProfile.objects.filter(user=request.user).first()
         credentials = request_bank_info("Dummy Bank", request.POST['username'], request.POST['password'])
         if credentials is None or credentials.status_code != 200:
             messages.error(request, 'Failed to log into Bank')

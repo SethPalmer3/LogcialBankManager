@@ -1,14 +1,8 @@
 from django.contrib import messages
-from django.http import response
-from django.shortcuts import render, redirect, reverse
-from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
 
-import requests
-
-
-from .models import ExternalWebApp, UserProfile, Partition
+from .models import UserProfile, Partition
 from .forms import NewPartiton, PartitionEditForm
 
 from .helper_funcs import *
@@ -26,8 +20,8 @@ def user_home(request):
     userprof = UserProfile.objects.filter(user=request.user).first()
     diff = check_partitions(partitons, request.user)
     if diff > 0.0:
-        if Partition.objects.filter(label="Unallocated").first():
-            part = Partition.objects.filter(label="Unallocated").first()
+        part = Partition.objects.filter(label="Unallocated").first()
+        if part is not None:
             part.current_amount = diff
             part.save()
         else:
@@ -108,7 +102,7 @@ def get_bank(request):
             messages.error(request, f'Failed to retrieve accounts')
             return render(request, 'bank_login.html')
         elif account_info.status_code == 401:
-            return bank_info_sequence(request, messages)
+            return bank_login_form_sequence(request, messages)
 
         elif account_info.status_code != 200:
             messages.error(request, f'Failed to retrieve accounts code: {account_info.status_code}')
@@ -118,4 +112,4 @@ def get_bank(request):
         update_user_profile(account_info, request, messages)
         return redirect(reverse('users:home'))
     elif request.method == "POST":
-        return bank_info_sequence(request, messages)
+        return bank_login_form_sequence(request, messages)
