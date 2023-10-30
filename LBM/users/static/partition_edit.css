@@ -1,32 +1,10 @@
+
 input[type="submit"]{
-  display: block;
-  margin-left: 20px;
-  margin-top: 20px;
-
-  font-size: 27px;
-
-  padding-left: 10px;
-  padding-right: 10px;
+  display: inline-block;
   padding-top: 5px;
   padding-bottom: 5px;
 
   border-width: 0px;
-  /* border-radius: 10px; */
-  /* border-color: blue; */
-
-  transition: background-color, scale 0.3s;
-
-    background-color: inherit;
-}
-
-input[type="submit"]:hover {
-  background-color: lightgrey;
-  scale: 105%;
-}
-
-
-input[type="submit"]:active() {
-  background-color: grey;
 }
 
 input[type="text"], input[type="number"] {

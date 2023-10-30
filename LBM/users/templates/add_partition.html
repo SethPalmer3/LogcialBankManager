@@ -1,17 +1,18 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'partition_edit.css' %}">
 <link rel="stylesheet" href="{% static 'main_color_scheme.css' %}">
+<link rel="stylesheet" href="{% static 'regular_styles.css' %}">
 <!DOCTYPE html>
 <html>
 <head>
     <title>New Partition Page</title>
 </head>
-<body>
+<body class="background">
     <form method="post">
       {% csrf_token %}
       {{ form.as_p }}
-      <input type="submit" value="Submit">
+      <input type="submit" value="Submit" class="anchor_wrap outline text button_hover background">
     </form>
-    <a href="{% url 'users:home' %}" class="anchor_wrap"> Cancel </a>
+    <a href="{% url 'users:home' %}" class="anchor_wrap outline text button_hover"> Cancel </a>
 </body>
 </html>
