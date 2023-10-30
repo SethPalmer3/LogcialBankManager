@@ -14,6 +14,7 @@
     {% else %}
     <p> Context didn't work </p>
     {% endif %}
+
     <a href="{% url 'users:remove_partition' partition_data.id %}" class="anchor_wrap text outline button_hover"> Remove Partiton </a>
     <a href="{% url 'users:edit_partition' partition_data.id %}" class="anchor_wrap text outline button_hover"> Edit Partiton </a>
     <a href="{% url 'users:home' %} " class="anchor_wrap text outline button_hover"> Back </a>

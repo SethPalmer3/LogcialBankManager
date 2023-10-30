@@ -19,7 +19,7 @@ def check_partitions( partitons: QuerySet, user=None, total_amount = 0.0):
         return 0.0
     total = 0
     for p in partitons:
-        if p.is_unallocated:
+        if not p.is_unallocated:
             total += p.current_amount
 
     if user is None:
@@ -30,7 +30,7 @@ def check_partitions( partitons: QuerySet, user=None, total_amount = 0.0):
     else:
         return 0.0
 
-def create_partition(owner, label="Undefined", amount = 0.0):
+def create_partition(owner, is_unallocated=False, label="Undefined", amount = 0.0):
     """
     Creates and returns a new partition
 
@@ -42,6 +42,7 @@ def create_partition(owner, label="Undefined", amount = 0.0):
     """
     first_parition = Partition.objects.create()
     first_parition.owner.add(owner)
+    first_parition.is_unallocated = is_unallocated
     first_parition.label = label
     first_parition.current_amount = amount
     first_parition.save()
@@ -120,6 +121,7 @@ def bank_login_form_sequence(request, messages):
             return render(request, 'bank_login.html')
         cred_details = credentials.json()
         request.session['bank_credentials'] = cred_details
+        print(vars(request.session))
         messages.success(request, "Successfully logged into bank")
 
         account_info = request_bank_accounts("Dummy Bank", cred_details)

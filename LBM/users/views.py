@@ -14,22 +14,24 @@ def index(request):
 
 @login_required(login_url="/login/")
 def user_home(request):
+    print(vars(request.session))
     if request.user is None or not request.user.is_authenticated:
         return redirect(reverse('logins:login'))
     partitons = Partition.objects.filter(owner=request.user)
     userprof = UserProfile.objects.filter(user=request.user).first()
     diff = check_partitions(partitons, request.user)
     print(diff)
-    if diff > 0.0:
+    if diff >= 0.0:
         part = Partition.objects.filter(is_unallocated=True).first()
         if part is not None:
             part.current_amount = diff
             part.save()
         else:
-            create_partition(request.user, "Unallocated", diff)
+            create_partition(request.user, True, "Unallocated", diff)
+            partitons = Partition.objects.filter(owner=request.user)
     elif diff < 0.0:
-        part = Partition.objects.filter(label="Unallocated").first()
-        if part:
+        part = Partition.objects.filter(is_unallocated=True).first()
+        if part is not None:
             if part.current_amount + diff >= 0.0:
                 part.current_amount += diff
                 part.save()

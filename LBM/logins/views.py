@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import render, redirect
@@ -61,10 +62,12 @@ def user_signup(request):
         form = SignUpForm()
     return render(request, 'signup.html', {'form': form})
 
+@login_required
 def get_bank(request):
     '''
     Actually retreiving bank info
     '''
+    print(vars(request.session))
     if request.session['bank_credentials']:
         account_info = request_bank_accounts("Dummy Bank", request.session['bank_credentials'])
         if account_info is None:
@@ -78,5 +81,7 @@ def get_bank(request):
             return render(request, 'bank_login.html')
         update_user_profile(account_info, request, messages)
         return redirect(reverse('users:home'))
+    elif request.method == "POST":
+        return bank_login_form_sequence(request, messages)
     else:
         return render(request, 'bank_login.html')
