@@ -1,7 +1,7 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'partitions/partition_edit.css' %}">
-<link rel="stylesheet" href="{% static 'main_color_scheme.css' %}">
 <link rel="stylesheet" href="{% static 'regular_styles.css' %}">
+<link rel="stylesheet" href="{% static 'main_color_scheme.css' %}">
 <!DOCTYPE html>
 <html>
 <head>
@@ -14,5 +14,12 @@
       <input type="submit" value="Submit" class="anchor_wrap outline text button_hover background">
     </form>
     <a href="{% url 'users:home' %}" class="anchor_wrap outline text button_hover"> Cancel </a>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
 </body>
 </html>

@@ -1,6 +1,7 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'logins/signup.css' %}">
 <link rel="stylesheet" href="{% static 'main_color_scheme.css' %}">
+<link rel="stylesheet" href="{% static 'regular_styles.css' %}">
 <!DOCTYPE html>
 <html>
 <head>
@@ -13,10 +14,13 @@
         {{ form.as_p }}
         <button type="submit">Signup</button>
     </form>
-    <br>
-    {% if error %}
-    <p>{{ error }}</p>
-    {% endif %}
     <a href="{% url 'logins:login' %}" class="anchor_wrap text outline"> Back to Login </a>
+    {% if messages %}
+    <ul class="messages outline text">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }} text"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
 </body>
 </html>

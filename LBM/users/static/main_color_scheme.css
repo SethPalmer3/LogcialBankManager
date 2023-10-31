@@ -14,3 +14,11 @@
 .text {
     color: #704F70;
 }
+
+.success {
+    color: #228B22;
+}
+
+.error {
+    color: #882D17;
+}

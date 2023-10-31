@@ -1,7 +1,7 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'partitions/partition.css' %}">
-<link rel="stylesheet" href="{% static 'regular_styles.css' %}">
 <link rel="stylesheet" href="{% static 'main_color_scheme.css' %}">
+<link rel="stylesheet" href="{% static 'regular_styles.css' %}">
 <!DOCTYPE html>
 <html>
 <head>
@@ -20,6 +20,13 @@
     <a href="{% url 'partitions:edit_partition' partition_data.id %}" class="anchor_wrap text outline button_hover"> Edit Partiton </a>
     {% endif %}
     <a href="{% url 'users:home' %}" class="anchor_wrap text outline button_hover"> Back </a>
+    {% if messages %}
+    <ul class="messages sector outline">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }} text inner_sector"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
 
 </body>
 </html>

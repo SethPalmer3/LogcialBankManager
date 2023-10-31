@@ -50,3 +50,30 @@
     line-height: 0vh;
     border-width: 0px;
 }
+
+.sector {
+    display: flex;
+    flex-direction: column;
+    border-width: 3px;
+    border-style: solid;
+    border-radius: 10px;
+    width: 50vh; 
+    padding: 5px;
+    vertical-align: top;
+    transition: background-color, scale 0.3s;
+    margin-left: 10px;
+    margin-top: 10px;
+}
+
+.inner_sector {
+    list-style-type: square;
+    list-style-position: inside;
+    font-size: 20px;
+}
+
+.success {
+    color: #228B22;
+}
+.error {
+    color: #882D17;
+}
