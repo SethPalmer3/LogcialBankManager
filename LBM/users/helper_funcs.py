@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.db.models import QuerySet
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -42,7 +43,7 @@ def create_partition(owner, is_unallocated=False, label="Undefined", amount = 0.
     Return: the new partition
     """
     first_partition = Partition.objects.create()
-    first_partition.owner.add(owner)
+    first_partition.owner = owner
     first_partition.is_unallocated = is_unallocated
     first_partition.label = label
     first_partition.current_amount = amount
@@ -144,6 +145,7 @@ def get_bank_accounts(name, request, messages):
             return None
         return account_info.json()['account_holder']['bank_accounts']
     else:
+        # TODO: Redirect to external bank login and retry
         messages.error(request, "Please login before getting bank accounts")
     return None
 
@@ -161,5 +163,7 @@ def request_transfer(name, request, from_acc, to_acc, amount):
         data['amount'] = amount
         response = requests.post(request_obj['url'], headers=headers, data=data)
         return response
+    elif 'bank_credentials' not in request.session:
+        messages.error(request, "Please login before making transfer")
     return None
 

@@ -43,6 +43,7 @@ def user_home(request):
                 messages.error(request, f"Over allocated balance by ${abs(diff)}")
         else:
             messages.error(request, f"Over allocated balance by ${abs(diff)}")
+    partitons = Partition.objects.filter(owner=request.user)
     return render(request, 'home.html', {'user_parts': partitons, 'user_profile': userprof})
 
 @login_required(login_url="/login/")
@@ -88,7 +89,7 @@ def add_partition(request):
         form = NewPartiton(request.POST)
         if form.is_valid():
             part = form.save(commit=True)
-            part.owner.set([request.user])
+            part.owner = request.user
             part.save()
             messages.success(request, f'Successfully created a partition {part.label}')
             return redirect('users:partition', partition_id=part.id)

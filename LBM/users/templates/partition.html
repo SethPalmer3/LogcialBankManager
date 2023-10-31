@@ -9,8 +9,8 @@
 </head>
 <body class="background">
     {% if partition_data %}
-    <h1 class="text"> Partition: {{ partition_data.label }} </h1>
-    <p class="partition_details text"> Current Amount: ${{ partition_data.current_amount }} </p>
+        <h1 class="text"> Partition: {{ partition_data.label }} - ${{partition_data.current_amount}} </h1>
+    <p class="partition_details text"> {{ partition_data.description }} </p>
     {% else %}
     <p> Context didn't work </p>
     {% endif %}
@@ -19,7 +19,7 @@
     <a href="{% url 'users:remove_partition' partition_data.id %}" class="anchor_wrap text outline button_hover"> Remove Partiton </a>
     <a href="{% url 'users:edit_partition' partition_data.id %}" class="anchor_wrap text outline button_hover"> Edit Partiton </a>
     {% endif %}
-    <a href="{% url 'users:home' %} " class="anchor_wrap text outline button_hover"> Back </a>
+    <a href="{% url 'users:home' %}" class="anchor_wrap text outline button_hover"> Back </a>
 
 </body>
 </html>
