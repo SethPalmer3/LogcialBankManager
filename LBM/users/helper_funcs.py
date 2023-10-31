@@ -30,23 +30,25 @@ def check_partitions( partitons: QuerySet, user=None, total_amount = 0.0):
     else:
         return 0.0
 
-def create_partition(owner, is_unallocated=False, label="Undefined", amount = 0.0):
+def create_partition(owner, is_unallocated=False, label="Undefined", amount = 0.0, description=""):
     """
     Creates and returns a new partition
 
     owner: User model associated with the new partition
     label: Label for new partition(default="Undefined")
     amount: Starting amount(default=0.0)
+    description: description of the partition
 
     Return: the new partition
     """
-    first_parition = Partition.objects.create()
-    first_parition.owner.add(owner)
-    first_parition.is_unallocated = is_unallocated
-    first_parition.label = label
-    first_parition.current_amount = amount
-    first_parition.save()
-    return first_parition
+    first_partition = Partition.objects.create()
+    first_partition.owner.add(owner)
+    first_partition.is_unallocated = is_unallocated
+    first_partition.label = label
+    first_partition.current_amount = amount
+    first_partition.description = description
+    first_partition.save()
+    return first_partition
 
 def get_UserProfile(user):
     """
