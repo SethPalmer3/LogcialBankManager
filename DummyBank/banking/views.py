@@ -1,64 +1,69 @@
-from rest_framework.authtoken.models import Token
-from rest_framework.exceptions import status
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
-from rest_framework import generics, serializers
-from rest_framework.views import APIView
+from decimal import Decimal
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.db import transaction
+from django.http.response import JsonResponse
+from django.utils.decorators import method_decorator
+from rest_framework.compat import View
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics
 
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, render
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from rest_framework.views import APIView
 
-from .serializers import AccountHolderSerializer, UserSerializer
+from .models import BankAccount
 
-from .models import AccountHolder
+from .serializers import  BankAccoutSerializer, UserSerializer
 
-from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope, TokenHasScope
+# from .models import AccountHolder
 
-default_url = 'http://127.0.0.1:8000'
+from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope
 
-def get_token(user):
-    try:
-        token = Token.objects.get(user=user)
-        token.delete()
-    except Token.DoesNotExist:
-        pass
-
-    token, created = Token.objects.get_or_create(user=user)
-    return token
-
-
-class IsOwner(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        has_perms = obj.user == request.user
-        print(obj)
-        return has_perms
-
-# Create your views here.
-class AccountHolderDetail(generics.RetrieveAPIView):
-    queryset = AccountHolder.objects.all()
-    serializer_class = AccountHolderSerializer
-    permission_classes = [IsAuthenticated, IsOwner]
-
-class ObatinAuthToken(APIView):
-    permission_classes = [AllowAny]
+# @method_decorator(login_required, name='dispatch')
+# @method_decorator(csrf_exempt, name='dispatch')
+class TransferBalanceView(APIView):
+    permission_classes = [IsAuthenticated, TokenHasReadWriteScope]
+    queryset = BankAccount.objects.all()
+    serializer_class = BankAccoutSerializer
     def post(self, request):
-        username = request.data.get("username")
-        password = request.data.get("password")
-        user = authenticate(request, username=username, password=password)
+        if not request.user.is_authenticated:
+            print("Unauthorized")
+            return JsonResponse({'error': 'Unauthorized'}, status=403)
+        from_account_id = request.POST.get('from_account_id')
+        to_account_id = request.POST.get('to_account_id')
+        print(f"{from_account_id} - {to_account_id}")
+        amount = Decimal(request.POST.get('amount'))
 
-        if user is not None:
-            token = get_token(user)
-            accholder = user.account_holder
+        # from_account = get_object_or_404(BankAccount, id=from_account_id)
+        # to_account = get_object_or_404(BankAccount, id=to_account_id)
+        try:
+            from_account = BankAccount.objects.get(id=from_account_id)
+        except BankAccount.DoesNotExist as e:
+            print(f"From Account Error: {e}")
+            return JsonResponse({'error': f'From account not found: {from_account_id}'}, status=404)
 
-            return Response({
-                'token': token.key,
-                'user_id': accholder.id
-            })
+        try:
+            to_account = BankAccount.objects.get(id=to_account_id)
+        except BankAccount.DoesNotExist as e:
+            print(f"To Account Error: {e}")
+            return JsonResponse({'error': f'To account not found: {to_account_id}'}, status=404)
 
-        else:
-            return Response({"error": "Invalid Credentials"}, status=status.HTTP_400_BAD_REQUEST)
+        if request.user != from_account.holder.user:
+            return JsonResponse({'error': 'Unauthorized'}, status=403)
+        if from_account.balance < amount:
+            return JsonResponse({'error': 'Insufficient funds'}, status=403)
 
+        with transaction.atomic():
+            from_account.balance -= Decimal(amount)
+            to_account.balance += Decimal(amount)
+            from_account.save()
+            to_account.save()
+        return JsonResponse({
+            'from_account_new_balance': str(from_account.balance),
+            'to_account_new_balance': str(to_account.balance)
+        })
 
 class UserList(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated, TokenHasReadWriteScope]
@@ -73,14 +78,6 @@ class UserDetails(generics.RetrieveAPIView):
         if not self.request.user.is_authenticated:
             return None
 
-        # queryset = self.get_queryset()
-        # filter_kwargs = {}
-        # if 'pk' in self.kwargs:
-        #     filter_kwargs['pk'] = self.kwargs['pk']
-        # elif 'username' in self.kwargs:
-        #     filter_kwargs['username'] = self.kwargs['username']
-        # obj = get_object_or_404(queryset, **filter_kwargs)
-
         obj = get_object_or_404(User, pk=self.request.user.pk)
 
         self.check_object_permissions(self.request, obj)
@@ -89,39 +86,5 @@ class UserDetails(generics.RetrieveAPIView):
     def get_queryset(self):
         return User.objects.all()
 
-class LoginView(APIView):
-    '''
-    View to handle user login and return an auth token
-    '''
-    permission_classes = [AllowAny]
-    def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-
-        user = authenticate(username=username, password=password)
-
-        if user is not None:
-            token = get_token(user)
-            accholder = user.account_holder
-            return Response({'token': token.key, 'user_id': accholder.id})
-        else:
-            return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
-
-
 def login_page(request):
-    return render(request, 'login.html')
-
-
-def login_check(request):
-    if request.method == "POST":
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            token = get_token(user)
-            accholder = user.account_holder
-            next_url = request.POST.get('next', default_url)
-            redirect_url = f"{next_url}/login_success/?token={token.key}&user_id={accholder.id}"
-            return redirect(redirect_url)
     return render(request, 'login.html')

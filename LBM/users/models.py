@@ -7,8 +7,8 @@ from django.contrib.auth.models import User
 # Create your models here.
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bank = models.OneToOneField(to="ExternalWebApp", null=True, on_delete=models.SET_NULL)
     total_amount = models.DecimalField(null=True, max_digits=30, decimal_places=2)
-    get_bank_account = models.JSONField(null=True, blank=True)
     objects = models.Manager()
 
     def __str__(self):
@@ -16,6 +16,7 @@ class UserProfile(models.Model):
 
 class Partition(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    is_unallocated = models.BooleanField(default=False)
     owner = models.ManyToManyField(User)
     label = models.CharField(max_length=200)
     current_amount = models.DecimalField(max_digits=20,decimal_places=2, default=0.0)
@@ -27,9 +28,9 @@ class Partition(models.Model):
 class ExternalWebApp(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
     client_key = models.CharField(max_length=200)
     secret_key = models.CharField(max_length=200)
+    get_bank_account = models.JSONField(null=True, blank=True)
     objects = models.Manager()
 
     def __str__(self) -> str:

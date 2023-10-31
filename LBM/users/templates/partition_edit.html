@@ -12,7 +12,7 @@
     <form method="post">
       {% csrf_token %}
       {{ form.as_p }}
-      <input type="submit" value="Submit" class="text outline button_hover button_like">
+      <input type="submit" value="Submit" class="anchor_wrap text outline button_hover button">
     </form>
     <a href="{% url 'users:partition' partition_id %}" class="anchor_wrap text outline button_hover"> Cancel </a>
     {% if messages %}

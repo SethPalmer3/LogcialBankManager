@@ -1,0 +1,30 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'logins/main_color_scheme.css' %}">
+<link rel="stylesheet" href="{% static 'logins/regular_styles.css' %}">
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bank Login</title>
+</head>
+<body class="background">
+    <form method="post">
+        {% csrf_token %}
+        <div class="textual_input">
+          <input type="text" name="username" class="inputs", placeholder="Username"><br><br>
+        </div>
+        <div class="textual_input">
+          <input type="password" name="password" class="outline text inputs" placeholder="Password"><br><br>
+        </div>
+        <input type="submit" value="Login" class="anchor_wrap text outline background button_hover button">
+    </form>
+    <a href="{% url 'users:home' %}" class="signup anchor_wrap text outline button_hover"> Cancel </a>
+    <br>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</body>
+</html>
