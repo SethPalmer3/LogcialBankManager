@@ -14,3 +14,13 @@ class SignUpForm(forms.ModelForm):
         if cd['password'] != cd['password2']:
             raise forms.ValidationError('Passwords dont\'t match.')
         return cd['password2']
+
+class BankTransferForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        bank_accounts = kwargs.pop('bank_accounts', [])
+        super().__init__(*args, **kwargs)
+        print(bank_accounts)
+        CHOICES = [(acc['id'], f"{acc['account_number']} - ${acc['balance']}") for acc in bank_accounts]
+        self.fields['from_bank_account'] = forms.ChoiceField(choices=[('', 'Select a Bank Account')] + CHOICES)
+        self.fields['to_bank_account'] = forms.ChoiceField(choices=[('', 'Select a Bank Account')] + CHOICES)
+        self.fields['amount'] = forms.DecimalField(max_digits=15, decimal_places=2)

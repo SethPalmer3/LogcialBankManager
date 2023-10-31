@@ -17,5 +17,15 @@
     "get_accounts": {
         "method": "GET",
         "url": "http://127.0.0.1:7000/users/me/"
+    },
+    "transfer": {
+        "method": "POST",
+        "url": "http://127.0.0.1:7000/transfer-balance/",
+        "data":{
+            "from_account_id": null,
+            "to_account_id": null,
+            "amount": null,
+            "scope": "write"
+        }
     }
 }

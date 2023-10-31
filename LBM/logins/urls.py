@@ -10,4 +10,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('signup/', views.user_signup, name='signup'),
     path('get_bank/', views.get_bank, name='get_bank'),
+    path('transfer/', views.transfer, name='transfer'),
 ] 

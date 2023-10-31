@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework.authtoken.views import obtain_auth_token
 
-from .views import  UserDetails, UserList, login_page
+from .views import  TransferBalanceView, UserDetails, UserList, login_page
 
 app_name = "banking"
 urlpatterns = [
@@ -9,4 +9,5 @@ urlpatterns = [
     path('login/', login_page, name='login_page'),
     path('users/', UserList.as_view(), name='user_list'),
     path('users/me/', UserDetails.as_view(), name='user'),
+    path('transfer-balance/', TransferBalanceView.as_view(), name='transfer_balance'),
 ]

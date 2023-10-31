@@ -121,9 +121,7 @@ def bank_login_form_sequence(request, messages):
             return render(request, 'bank_login.html')
         cred_details = credentials.json()
         request.session['bank_credentials'] = cred_details
-        print(vars(request.session))
         messages.success(request, "Successfully logged into bank")
-
         account_info = request_bank_accounts("Dummy Bank", cred_details)
         if account_info is None or account_info.status_code != 200:
             messages.error(request, 'Failed to retrieve accounts')
@@ -135,4 +133,29 @@ def bank_login_form_sequence(request, messages):
     except requests.RequestException as e:
         messages.error(request, f"Error fetching bank data: {e}")
     return render(request, 'bank_login.html')
+
+def get_bank_accounts(name, request, messages):
+    if 'bank_credentials' in request.session:
+        account_info = request_bank_accounts(name, request.session['bank_credentials'])
+        if account_info is None:
+            messages.error(request, f'Failed to retrieve accounts')
+            return None
+        return account_info.json()['account_holder']['bank_accounts']
+    return None
+
+def request_transfer(name, request, from_acc, to_acc, amount):
+    bank = ExternalWebApp.objects.filter(name=name).first()
+    if bank is not None and 'bank_credentials' in request.session:
+        response_obj = request.session['bank_credentials']
+        request_obj = bank.get_bank_account['transfer']
+        headers = {
+            'Authorization': f"{response_obj['token_type']} {response_obj['access_token']}",
+        }
+        data = request_obj['data']
+        data['from_account_id'] = from_acc
+        data['to_account_id'] = to_acc
+        data['amount'] = amount
+        response = requests.post(request_obj['url'], headers=headers, data=data)
+        return response
+    return None
 

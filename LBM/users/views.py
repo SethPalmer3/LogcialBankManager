@@ -14,7 +14,6 @@ def index(request):
 
 @login_required(login_url="/login/")
 def user_home(request):
-    print(vars(request.session))
     if request.user is None or not request.user.is_authenticated:
         return redirect(reverse('logins:login'))
     partitons = Partition.objects.filter(owner=request.user)
@@ -90,27 +89,3 @@ def remove_partiton(request, partition_id):
         messages.error(request, "Couldn\'t find partition")
 
     return redirect(reverse('users:home')) # Redirects to their new home screen
-
-def get_bank(request):
-    '''
-    Actually retreiving bank info
-    '''
-    if request.session['bank_credentials']:
-        print(request.session['bank_credentials'])
-        account_info = request_bank_accounts("Dummy Bank", request.session['bank_credentials'])
-        # TODO: Take care of exception when token expires
-        if account_info is None:
-            messages.error(request, f'Failed to retrieve accounts')
-            return render(request, 'bank_login.html')
-        elif account_info.status_code == 401:
-            return bank_login_form_sequence(request, messages)
-
-        elif account_info.status_code != 200:
-            messages.error(request, f'Failed to retrieve accounts code: {account_info.status_code}')
-            return render(request, 'bank_login.html')
-
-
-        update_user_profile(account_info, request, messages)
-        return redirect(reverse('users:home'))
-    elif request.method == "POST":
-        return bank_login_form_sequence(request, messages)
