@@ -15,7 +15,7 @@
     {% endif %}
     <br>
     {% for p in user_parts %}
-    <a href="{% url 'users:partition' p.id %}" class="partition_wrap_link text outline">
+    <a href="{% url 'partitions:partition' p.id %}" class="partition_wrap_link text outline">
         <div class="partition_wrap outline button_hover">
             <p class="partition_label text"> {{ p.label }} </p>
             <p class="partition_amount text"> ${{ p.current_amount }} </p>
@@ -23,7 +23,7 @@
     </a>
     {% endfor %}
     <br>
-    <a href="{% url 'users:add_partition' %}" class="anchor_wrap text outline button_hover"> Create a Partiton </a>
+    <a href="{% url 'partitions:add_partition' %}" class="anchor_wrap text outline button_hover"> Create a Partiton </a>
     <!-- <button onclick="openLoginPopup()" class="anchor_wrap outline background text button_hover button"> Login to Bank</button> -->
     <a href="{% url 'logins:get_bank' %}" class="anchor_wrap text outline button_hover"> Bank Login </a>
     <a href="{% url 'logins:transfer' %}" class="anchor_wrap text outline button_hover"> Transfer </a>

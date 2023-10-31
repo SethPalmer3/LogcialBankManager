@@ -1,5 +1,5 @@
 {% load static %}
-<link rel="stylesheet" href="{% static 'partition_edit.css' %}">
+<link rel="stylesheet" href="{% static 'partitions/partition_edit.css' %}">
 <link rel="stylesheet" href="{% static 'main_color_scheme.css' %}">
 <link rel="stylesheet" href="{% static 'regular_styles.css' %}">
 
@@ -14,7 +14,7 @@
       {{ form.as_p }}
       <input type="submit" value="Submit" class="anchor_wrap text outline button_hover button">
     </form>
-    <a href="{% url 'users:partition' partition_id %}" class="anchor_wrap text outline button_hover"> Cancel </a>
+    <a href="{% url 'partitions:partition' partition_id %}" class="anchor_wrap text outline button_hover"> Cancel </a>
     {% if messages %}
     <ul class="messages">
         {% for message in messages %}

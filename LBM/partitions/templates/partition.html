@@ -1,5 +1,5 @@
 {% load static %}
-<link rel="stylesheet" href="{% static 'partition.css' %}">
+<link rel="stylesheet" href="{% static 'partitions/partition.css' %}">
 <link rel="stylesheet" href="{% static 'regular_styles.css' %}">
 <link rel="stylesheet" href="{% static 'main_color_scheme.css' %}">
 <!DOCTYPE html>
@@ -16,8 +16,8 @@
     {% endif %}
 
     {% if not partition_data.is_unallocated %}
-    <a href="{% url 'users:remove_partition' partition_data.id %}" class="anchor_wrap text outline button_hover"> Remove Partiton </a>
-    <a href="{% url 'users:edit_partition' partition_data.id %}" class="anchor_wrap text outline button_hover"> Edit Partiton </a>
+    <a href="{% url 'partitions:remove_partition' partition_data.id %}" class="anchor_wrap text outline button_hover"> Remove Partiton </a>
+    <a href="{% url 'partitions:edit_partition' partition_data.id %}" class="anchor_wrap text outline button_hover"> Edit Partiton </a>
     {% endif %}
     <a href="{% url 'users:home' %}" class="anchor_wrap text outline button_hover"> Back </a>
 

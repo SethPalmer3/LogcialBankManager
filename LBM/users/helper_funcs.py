@@ -4,7 +4,8 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 import requests
 from requests.auth import HTTPBasicAuth
-from .models import ExternalWebApp, Partition, UserProfile
+from .models import ExternalWebApp, UserProfile
+from partitions.models import Partition
 
 def check_partitions( partitons: QuerySet, user=None, total_amount = 0.0):
     """
@@ -138,6 +139,9 @@ def bank_login_form_sequence(request, messages):
     return render(request, 'bank_login.html')
 
 def get_bank_accounts(name, request, messages):
+    '''
+    Get bank accounts. Does not automatically redirect to bank login
+    '''
     if 'bank_credentials' in request.session:
         account_info = request_bank_accounts(name, request.session['bank_credentials'])
         if account_info is None:
