@@ -54,7 +54,7 @@ def get_UserProfile(user):
     """
     return UserProfile.objects.filter(user=user).first()
 
-def request_bank_info(name, username, password):
+def request_bank_authentication(name, username, password):
     """
     Make a web request to bank to get credentials
     """
@@ -63,10 +63,10 @@ def request_bank_info(name, username, password):
         request_obj = bank.get_bank_account
         req_creds = request_obj['get_credentials']
         data = {
-                'grant_type': 'password',
-                'username': username,
-                'password': password,
-                }
+            'grant_type': 'password',
+            'username': username,
+            'password': password,
+        }
         response = requests.post(
             req_creds['url'],
             data=data,
@@ -89,7 +89,7 @@ def request_bank_accounts(name, response_obj):
         return response
     return None
 
-def update_user_profile(account_info, request, messages):
+def update_user_total(account_info, request, messages):
     """
     From account_info which holds bank account information. 
     Update the total amount the user can partition
@@ -115,7 +115,7 @@ def bank_login_form_sequence(request, messages):
     On success, stores the credentials in session
     """
     try:
-        credentials = request_bank_info("Dummy Bank", request.POST['username'], request.POST['password'])
+        credentials = request_bank_authentication("Dummy Bank", request.POST['username'], request.POST['password'])
         if credentials is None or credentials.status_code != 200:
             messages.error(request, 'Failed to log into Bank')
             return render(request, 'bank_login.html')
@@ -127,7 +127,7 @@ def bank_login_form_sequence(request, messages):
             messages.error(request, 'Failed to retrieve accounts')
             return render(request, 'bank_login.html')
 
-        update_user_profile(account_info, request, messages)
+        update_user_total(account_info, request, messages)
         return redirect(reverse('users:home'))
 
     except requests.RequestException as e:
@@ -141,6 +141,8 @@ def get_bank_accounts(name, request, messages):
             messages.error(request, f'Failed to retrieve accounts')
             return None
         return account_info.json()['account_holder']['bank_accounts']
+    else:
+        messages.error(request, "Please login before getting bank accounts")
     return None
 
 def request_transfer(name, request, from_acc, to_acc, amount):

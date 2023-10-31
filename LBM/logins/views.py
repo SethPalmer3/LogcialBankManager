@@ -14,6 +14,9 @@ from users.helper_funcs import *
 
 # Create your views here.
 def user_login(request):
+    '''
+    User login page view
+    '''
     if request.user.is_authenticated:
         return redirect(reverse('users:home'))
 
@@ -35,10 +38,16 @@ def user_login(request):
     return render(request, 'login.html')
 
 def user_logout(request):
+    '''
+    User logout view. No page.
+    '''
     logout(request)
     return redirect(reverse('logins:login'))
 
 def user_signup(request):
+    '''
+    User signup page view
+    '''
     if request.method == "POST": # If the user has inputted data
         form = SignUpForm(request.POST) # Parse signup form information
         if form.is_valid():
@@ -56,7 +65,7 @@ def user_signup(request):
                 login(request, user) # Persistant login of user
                 return redirect(reverse('users:home')) # Redirects to their new home screen
             except Exception as e:
-                print(e)
+                messages.error(request, f"{e}")
                 form = SignUpForm()
                 return render(request, 'signup.html', {'form': form, 'error': e})
                 
@@ -67,7 +76,8 @@ def user_signup(request):
 @login_required
 def get_bank(request):
     '''
-    Actually retreiving bank info
+    If no authentication token known, give login page. 
+    On success or authentication known, get bank account info
     '''
     if 'bank_credentials' in request.session:
         account_info = request_bank_accounts("Dummy Bank", request.session['bank_credentials'])
@@ -80,44 +90,12 @@ def get_bank(request):
         elif account_info.status_code != 200:
             messages.error(request, f'Failed to retrieve accounts code: {account_info.status_code}')
             return render(request, 'bank_login.html')
-        update_user_profile(account_info, request, messages)
+        update_user_total(account_info, request, messages)
         return redirect(reverse('users:home'))
     elif request.method == "POST":
         return bank_login_form_sequence(request, messages)
     else:
         return render(request, 'bank_login.html')
-
-# def transfer(request):
-#     '''
-#     Transfer money from one account to another
-#     '''
-#     bank_accounts = get_bank_accounts("Dummy Bank", request, messages)
-#     # print(bank_accounts)
-#     if bank_accounts is not None:
-#         form = BankTransferForm(bank_accounts=bank_accounts)
-#     else:
-#         form = BankTransferForm()
-
-#     print(form.errors)
-#     if bank_accounts is not None and request.method == 'POST' and form.is_valid():
-#         from_acc = form.cleaned_data['from_bank_account']
-#         to_acc = form.cleaned_data['to_bank_account']
-#         amount = form.cleaned_data['amount']
-#         print(f"from: {from_acc} to: {to_acc} - ${amount}")
-#         if from_acc != to_acc and bank_accounts[from_acc].balance >= amount:
-#             response = request_transfer("Dummy Bank", request)
-#             if response is not None:
-#                 if response.status_code == 200:
-#                     messages.success(request, "Successful transfer")
-#                     return redirect(reverse("users:home"))
-#                 else:
-#                     messages.error(request, "Failed to transfer")
-#                     return redirect(reverse("users:home"))
-#             else:
-#                 messages.error(request, "Failed to make transfer request")
-#                 return redirect(reverse("users:home"))
-
-#     return render(request, "transfer.html", {'form': form})
 
 @login_required
 def transfer(request):
