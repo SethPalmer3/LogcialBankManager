@@ -13,7 +13,7 @@
         {{ form.as_p }}
         <button class="anchor_wrap text outline button button_hover" type="submit"> Transfer </button>
     </form>
-    <a href="{% url 'users:home' %}" class="anchor_wrap text outline"> Cancel </a>
+    <a href="{% url 'users:home' %}" class="anchor_wrap text outline button_hover"> Cancel </a>
     {% if messages %}
     <ul class="messages outline sector">
         {% for message in messages %}

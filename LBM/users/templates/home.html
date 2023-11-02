@@ -9,8 +9,10 @@
 </head>
 <body class="background">
     <h1 class="text"> Hello {{ user.first_name }}! </h1>
-    {% if user_profile %}
+    {% if user_profile.total_amount %}
     <h2 class="text"> Current total amount: ${{ user_profile.total_amount }}</h2>
+    {% else %}
+    <h2 class="text"> No current set total amount </h2>
     {% endif %}
     <br>
     {% for p in user_parts %}

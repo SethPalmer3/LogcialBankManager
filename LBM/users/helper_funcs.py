@@ -18,7 +18,7 @@ def check_partitions( partitons: QuerySet, user=None, total_amount = 0.0):
     Return: the difference from the allowed total and the partition total
     """
     if total_amount < 0.0:
-        return 0.0
+        return None
     total = 0
     for p in partitons:
         if not p.is_unallocated:
@@ -27,10 +27,10 @@ def check_partitions( partitons: QuerySet, user=None, total_amount = 0.0):
     if user is None:
         return total_amount - total
     userprof = UserProfile.objects.filter(user=user).first()
-    if userprof is not None:
+    if userprof is not None and userprof.total_amount is not None:
         return userprof.total_amount - total
     else:
-        return 0.0
+        return None
 
 def create_partition(owner, is_unallocated=False, label="Undefined", amount = 0.0, description=""):
     """

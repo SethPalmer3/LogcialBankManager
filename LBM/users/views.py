@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth import logout
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
@@ -23,23 +24,29 @@ def user_home(request):
         return redirect(reverse('logins:login'))
     partitons = Partition.objects.filter(owner=request.user)
     userprof = UserProfile.objects.filter(user=request.user).first()
+
     diff = check_partitions(partitons, request.user)
+    unallocated_partition = Partition.objects.filter(is_unallocated=True).first()
+    if diff is None or userprof.total_amount is None: # Checks if userprof has a total_amount
+        if unallocated_partition is not None:
+            unallocated_partition.delete()
+        partitons = Partition.objects.filter(owner=request.user)
+        return render(request, 'home.html', {'user_parts': partitons, 'user_profile': userprof})
+
     if diff >= 0.0: # checking if partition total is the same or lower than user total
-        part = Partition.objects.filter(is_unallocated=True).first()
-        if part is not None:
-            part.current_amount = diff
-            part.save()
+        if unallocated_partition is not None:
+            unallocated_partition.current_amount = diff
+            unallocated_partition.save()
         else:
             create_partition(request.user, True, "Unallocated", diff)
             partitons = Partition.objects.filter(owner=request.user)
     else: # If the partition allocation is bigger than user total
-        part = Partition.objects.filter(is_unallocated=True).first()
-        if part is not None:
-            if part.current_amount + diff >= 0.0:
-                part.current_amount += diff
-                part.save()
+        if unallocated_partition is not None:
+            if unallocated_partition.current_amount + diff >= 0.0:
+                unallocated_partition.current_amount += diff
+                unallocated_partition.save()
             else:
-                part.delete()
+                unallocated_partition.delete()
                 messages.error(request, f"Over allocated balance by ${abs(diff)}")
         else:
             messages.error(request, f"Over allocated balance by ${abs(diff)}")

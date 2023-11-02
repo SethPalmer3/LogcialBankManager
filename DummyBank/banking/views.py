@@ -1,15 +1,10 @@
 from decimal import Decimal
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
 from django.http.response import JsonResponse
-from django.utils.decorators import method_decorator
-from rest_framework.compat import View
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
 
 from django.shortcuts import get_object_or_404, render
-from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework.views import APIView
 
@@ -17,12 +12,9 @@ from .models import BankAccount
 
 from .serializers import  BankAccoutSerializer, UserSerializer
 
-# from .models import AccountHolder
 
 from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope
 
-# @method_decorator(login_required, name='dispatch')
-# @method_decorator(csrf_exempt, name='dispatch')
 class TransferBalanceView(APIView):
     permission_classes = [IsAuthenticated, TokenHasReadWriteScope]
     queryset = BankAccount.objects.all()
