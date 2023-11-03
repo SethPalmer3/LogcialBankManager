@@ -1,5 +1,5 @@
+from datetime import timezone
 from django.contrib import messages
-from django.contrib.auth import logout
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
@@ -15,15 +15,22 @@ def index(request):
     '''
     return redirect(reverse('logins:login'))
 
+def clear_token(request):
+    request.user.userprofile.valid_token = False
+    request.user.userprofile.save()
+    return redirect(reverse('users:home'))
+
 @login_required(login_url="/login/")
 def user_home(request):
     '''
     The home page view for a logged in user
     '''
+
     if request.user is None or not request.user.is_authenticated:
         return redirect(reverse('logins:login'))
     partitons = Partition.objects.filter(owner=request.user)
     userprof = UserProfile.objects.filter(user=request.user).first()
+    # print((datetime.datetime.now(timezone.utc) - userprof.last_refreshed).seconds)
 
     diff = check_partitions(partitons, request.user)
     unallocated_partition = Partition.objects.filter(is_unallocated=True).first()

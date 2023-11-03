@@ -79,8 +79,10 @@ def get_bank(request):
     If no authentication token known, give login page. 
     On success or authentication known, get bank account info
     '''
-    if 'bank_credentials' in request.session:
-        account_info = request_bank_accounts("Dummy Bank", request.session['bank_credentials'])
+    userprof = request.user.userprofile
+    if userprof is not None and userprof.valid_token:
+        print(userprof.access_token)
+        account_info = request_bank_accounts("Dummy Bank", userprof.token_type, userprof.access_token)
         if account_info is None:
             messages.error(request, f'Failed to retrieve accounts')
             return render(request, 'bank_login.html')
@@ -127,6 +129,5 @@ def transfer(request):
                     messages.error(request, "Failed to make transfer request")
                     return redirect(reverse("users:home"))
         else:
-            print(form.errors.as_data())  # Moved this line here to print errors if form is not valid
             return render(request, "transfer.html", {'form': form})
     return render(request, "transfer.html", {'form': form})

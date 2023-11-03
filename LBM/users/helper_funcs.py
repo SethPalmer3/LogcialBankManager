@@ -1,9 +1,11 @@
+from datetime import timezone
 from django.contrib import messages
 from django.db.models import QuerySet
 from django.shortcuts import redirect, render
 from django.urls import reverse
 import requests
 from requests.auth import HTTPBasicAuth
+from rest_framework.fields import datetime
 from .models import ExternalWebApp, UserProfile
 from partitions.models import Partition
 
@@ -58,7 +60,7 @@ def get_UserProfile(user):
     """
     return UserProfile.objects.filter(user=user).first()
 
-def request_bank_authentication(name, username, password):
+def bank_login_auth(name, username, password):
     """
     Make a web request to bank to get credentials
     """
@@ -79,7 +81,7 @@ def request_bank_authentication(name, username, password):
         return response
     return None
 
-def request_bank_accounts(name, response_obj):
+def request_bank_accounts(name, token_type, access_token):
     """
     Make a web request to bank to get bank account information
     """
@@ -87,7 +89,7 @@ def request_bank_accounts(name, response_obj):
     if bank is not None:
         request_obj = bank.get_bank_account['get_accounts']
         headers = {
-            'Authorization': f"{response_obj['token_type']} {response_obj['access_token']}",
+            'Authorization': f"{token_type} {access_token}",
         }
         response = requests.get(request_obj['url'], headers=headers)
         return response
@@ -119,14 +121,26 @@ def bank_login_form_sequence(request, messages):
     On success, stores the credentials in session
     """
     try:
-        credentials = request_bank_authentication("Dummy Bank", request.POST['username'], request.POST['password'])
+        credentials = bank_login_auth("Dummy Bank", request.POST['username'], request.POST['password'])
         if credentials is None or credentials.status_code != 200:
             messages.error(request, 'Failed to log into Bank')
             return render(request, 'bank_login.html')
         cred_details = credentials.json()
-        request.session['bank_credentials'] = cred_details
+
+        userprof = request.user.userprofile
+        if userprof is None:
+            messages.error(request, 'Could not find user profile')
+            return render(request, 'bank_login.html')
+        userprof.access_token = cred_details['access_token']
+        userprof.token_type = cred_details['token_type']
+        userprof.last_refreshed = datetime.datetime.now(timezone.utc)
+        userprof.token_expire_time = cred_details['expires_in']
+        userprof.refresh_token = cred_details['refresh_token']
+        userprof.valid_token = True
+        userprof.save()
+
         messages.success(request, "Successfully logged into bank")
-        account_info = request_bank_accounts("Dummy Bank", cred_details)
+        account_info = request_bank_accounts("Dummy Bank", userprof.token_type, userprof.access_token)
         if account_info is None or account_info.status_code != 200:
             messages.error(request, 'Failed to retrieve accounts')
             return render(request, 'bank_login.html')
@@ -142,8 +156,9 @@ def get_bank_accounts(name, request, messages):
     '''
     Get bank accounts. Does not automatically redirect to bank login
     '''
-    if 'bank_credentials' in request.session:
-        account_info = request_bank_accounts(name, request.session['bank_credentials'])
+    userprof = request.user.userprofile
+    if userprof is not None and userprof.valid_token:
+        account_info = request_bank_accounts(name, userprof.token_type, userprof.access_token)
         if account_info is None:
             messages.error(request, f'Failed to retrieve accounts')
             return None
@@ -155,11 +170,11 @@ def get_bank_accounts(name, request, messages):
 
 def request_transfer(name, request, from_acc, to_acc, amount):
     bank = ExternalWebApp.objects.filter(name=name).first()
-    if bank is not None and 'bank_credentials' in request.session:
-        response_obj = request.session['bank_credentials']
+    userprof = request.user.userprofile
+    if bank is not None and userprof is not None and userprof.valid_token:
         request_obj = bank.get_bank_account['transfer']
         headers = {
-            'Authorization': f"{response_obj['token_type']} {response_obj['access_token']}",
+            'Authorization': f"{userprof.token_type} {userprof.access_token}",
         }
         data = request_obj['data']
         data['from_account_id'] = from_acc
@@ -167,7 +182,25 @@ def request_transfer(name, request, from_acc, to_acc, amount):
         data['amount'] = amount
         response = requests.post(request_obj['url'], headers=headers, data=data)
         return response
-    elif 'bank_credentials' not in request.session:
+    elif not userprof.valid_token:
         messages.error(request, "Please login before making transfer")
     return None
+
+# def request_transfer(name, request, from_acc, to_acc, amount):
+#     bank = ExternalWebApp.objects.filter(name=name).first()
+#     if bank is not None and 'bank_credentials' in request.session:
+#         response_obj = request.session['bank_credentials']
+#         request_obj = bank.get_bank_account['transfer']
+#         headers = {
+#             'Authorization': f"{response_obj['token_type']} {response_obj['access_token']}",
+#         }
+#         data = request_obj['data']
+#         data['from_account_id'] = from_acc
+#         data['to_account_id'] = to_acc
+#         data['amount'] = amount
+#         response = requests.post(request_obj['url'], headers=headers, data=data)
+#         return response
+#     elif 'bank_credentials' not in request.session:
+#         messages.error(request, "Please login before making transfer")
+#     return None
 

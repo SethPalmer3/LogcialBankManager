@@ -13,7 +13,15 @@ GET_TRANS = 'transfer'
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bank = models.OneToOneField(to="ExternalWebApp", null=True, on_delete=models.SET_NULL)
-    total_amount = encrypt(models.DecimalField(null=True, max_digits=30, decimal_places=2))
+    total_amount = encrypt(models.DecimalField(null=True, blank=True, max_digits=30, decimal_places=2))
+    valid_token = models.BooleanField(default=False)
+    access_token = encrypt(models.TextField(null=True, blank=True, max_length=30))
+    token_type = encrypt(models.TextField(null=True, blank=True, max_length=30))
+    last_refreshed = encrypt(models.DateTimeField(null=True, blank=True))
+    token_expire_time = encrypt(models.IntegerField(default=0))
+    refresh_token = encrypt(models.TextField(null=True, blank=True, max_length=30))
+
+
     objects = models.Manager()
 
     def __str__(self):
