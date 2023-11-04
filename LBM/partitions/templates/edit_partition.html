@@ -16,7 +16,7 @@
     </form>
     <a href="{% url 'partitions:partition' partition_id %}" class="anchor_wrap text outline button_hover"> Cancel </a>
     {% if messages %}
-    <ul class="messages sector outline">
+    <ul class="messages sector right_justified">
         {% for message in messages %}
         <li{% if message.tags %} class="{{ message.tags }} text inner_sector"{% endif %}>{{ message }}</li>
         {% endfor %}

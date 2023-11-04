@@ -1,9 +1,13 @@
+@font-face {
+    font-family: "Montserrat";
+    src: url('/static/Montserrat-VariableFont_wght.ttf')
+}
 .background {
-    background-color: #A1AEA0;
+    background-color: #D4CBC0;
 }
 
 .button_hover:hover {
-    background-color: #D4CBC0;
+    background-color: #A1AEA0;
 }
 
 .outline {
@@ -13,6 +17,7 @@
 
 .text {
     color: #704F70;
+    font-family: "Montserrat";
 }
 
 .success {

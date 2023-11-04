@@ -9,7 +9,7 @@
 </head>
 <body class="background">
     {% if partition_data %}
-        <h1 class="text"> Partition: {{ partition_data.label }} - ${{partition_data.current_amount}} </h1>
+        <h1 class="text heading_text"> Partition: {{ partition_data.label }} - ${{partition_data.current_amount}} </h1>
     <p class="partition_details text"> {{ partition_data.description }} </p>
     {% else %}
     <p> Context didn't work </p>
@@ -21,7 +21,7 @@
     {% endif %}
     <a href="{% url 'users:home' %}" class="anchor_wrap text outline button_hover"> Back </a>
     {% if messages %}
-    <ul class="messages sector outline">
+    <ul class="messages sector right_justified">
         {% for message in messages %}
         <li{% if message.tags %} class="{{ message.tags }} text inner_sector"{% endif %}>{{ message }}</li>
         {% endfor %}

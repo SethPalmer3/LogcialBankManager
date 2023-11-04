@@ -1,3 +1,7 @@
+@font-face {
+    font-family: "Montserrat";
+    src: url('/static/Montserrat-VariableFont_wght.ttf')
+}
 
 input[type="submit"]{
   display: inline-block;
@@ -21,6 +25,7 @@ input[type="text"], input[type="number"] {
 
     left: 20px;
     font-size: 23px;
+    font-family: "Montserrat";
 
     display: flex;
     justify-content: center;
@@ -34,7 +39,7 @@ input[type="text"], input[type="number"] {
 label{
     color: #704F70;
     font-size: 20px;
-    font-family: monospace;
+    font-family: "Montserrat";
     margin-left: 20px;
 }
 

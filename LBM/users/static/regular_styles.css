@@ -1,10 +1,34 @@
+@font-face {
+    font-family: "Russo One";
+    src: url("/static/RussoOne-Regular.ttf");
+}
+@font-face {
+    font-family: "Bungee";
+    src: url("Bungee-Regular.ttf")
+}
+@font-face {
+    font-family: "Rubik";
+    src: url("RubikMonoOne-Regular.ttf")
+}
+@font-face {
+    font-family: "Audiowide";
+    src: url("Audiowide-Regular.ttf")
+}
+@font-face {
+    font-family: "BowlbyOneSC";
+    src: url("BowlbyOneSC-Regular.ttf")
+}
+@font-face{
+    font-family: "Orbitron";
+    src: url('/static/Orbitron-VariableFont_wght.ttf')
+}
 .anchor_wrap {
     text-decoration: none;
     display: inline-block;
     vertical-align: middle;
 
     font-size: 23px;
-    font-family: monospace;
+    /* font-family: monospace; */
     text-align: center;
 
     outline-style: solid;
@@ -51,10 +75,22 @@
     border-width: 0px;
 }
 
+.left_justified {
+    left: 30px;
+}
+
+.right_justified {
+    right: 30px;
+}
+
 .sector {
+    position:fixed;
+    top: 5px;
+    display: flex;
+    gap: 10px;
     display: flex;
     flex-direction: column;
-    border-width: 3px;
+    border-width: 0px;
     border-style: solid;
     border-radius: 10px;
     width: 50vh; 
@@ -76,4 +112,12 @@
 }
 .error {
     color: #882D17;
+}
+
+.heading_text {
+    font-family: 'Rubik';
+}
+
+.subheading_text {
+    font-family: "Orbitron";
 }
