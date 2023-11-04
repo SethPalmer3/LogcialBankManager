@@ -25,13 +25,14 @@
         <a href="{% url 'partitions:partition' p.id %}" class="partition_wrap_link text outline">
             <div class="partition_wrap outline button_hover">
                 <p class="partition_label text"> {{ p.label }} </p>
+                <div class="dots"></div>
                 <p class="partition_amount text"> ${{ p.current_amount }} </p>
             </div>
         </a>
         {% endfor %}
     </div>
     <br>
-    <div class="home_page_container">
+    <div class="home_page_buttons">
         <div class="button_container">
             <a href="{% url 'logins:get_bank' %}" class="anchor_wrap text outline button_hover"> Bank Login </a>
             <a href="{% url 'logins:logout' %}" class="anchor_wrap text outline button_hover"> Logout </a>
