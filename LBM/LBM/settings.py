@@ -27,6 +27,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+SECURE_SSL_REDIRECT=False
+
 LOGIN_URL = "/login/"
 
 # Application definition

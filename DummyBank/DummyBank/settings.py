@@ -30,6 +30,8 @@ ALLOWED_HOSTS = ['*']
 
 LOGIN_URL='/admin/login/'
 
+SECURE_SSL_REDIRECT=False
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
