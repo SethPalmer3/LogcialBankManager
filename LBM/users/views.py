@@ -7,7 +7,7 @@ from partitions.models import Partition
 
 from .helper_funcs import *
 
-TEST_MESSAGES = True
+TEST_MESSAGES = False
 
 # Create your views here.
 def index(request):
