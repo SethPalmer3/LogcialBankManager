@@ -54,6 +54,7 @@ h2{
 
 .unallocated {
     order: 1;
+    text-decoration: none;
     border-width: 3px;
     border-style: solid;
     border-radius: 10px;
