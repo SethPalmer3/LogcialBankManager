@@ -27,6 +27,16 @@
             "amount": null,
             "scope": "write"
         }
+    },
+    "refresh": {
+        "method": "POST",
+        "url": "http://127.0.0.1:7000/o/token/",
+        "data": {
+            "grant_type": "refresh_token",
+            "refresh_token": null,
+            "client_id": null,
+            "client_secret": null
+        }
     }
 }
 

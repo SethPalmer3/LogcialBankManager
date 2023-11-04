@@ -1,4 +1,3 @@
-from datetime import timezone
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -15,9 +14,14 @@ def index(request):
     '''
     return redirect(reverse('logins:login'))
 
-def clear_token(request):
+def invalidate_user_token(request):
     request.user.userprofile.valid_token = False
     request.user.userprofile.save()
+    return redirect(reverse('users:home'))
+
+def refresh_user_token(reqeust):
+    if need_bank_login(reqeust, messages):
+        return redirect(reverse('logins:get_bank'))
     return redirect(reverse('users:home'))
 
 @login_required(login_url="/login/")
@@ -28,17 +32,17 @@ def user_home(request):
 
     if request.user is None or not request.user.is_authenticated:
         return redirect(reverse('logins:login'))
-    partitons = Partition.objects.filter(owner=request.user)
+    partitions = Partition.objects.filter(owner=request.user)
     userprof = UserProfile.objects.filter(user=request.user).first()
-    # print((datetime.datetime.now(timezone.utc) - userprof.last_refreshed).seconds)
 
-    diff = check_partitions(partitons, request.user)
+    diff = check_partitions(partitions, request.user)
     unallocated_partition = Partition.objects.filter(is_unallocated=True).first()
+
     if diff is None or userprof.total_amount is None: # Checks if userprof has a total_amount
         if unallocated_partition is not None:
             unallocated_partition.delete()
-        partitons = Partition.objects.filter(owner=request.user)
-        return render(request, 'home.html', {'user_parts': partitons, 'user_profile': userprof})
+        partitions = Partition.objects.filter(owner=request.user)
+        return render(request, 'home.html', {'user_parts': partitions, 'user_profile': userprof})
 
     if diff >= 0.0: # checking if partition total is the same or lower than user total
         if unallocated_partition is not None:
@@ -46,7 +50,7 @@ def user_home(request):
             unallocated_partition.save()
         else:
             create_partition(request.user, True, "Unallocated", diff)
-            partitons = Partition.objects.filter(owner=request.user)
+            partitions = Partition.objects.filter(owner=request.user)
     else: # If the partition allocation is bigger than user total
         if unallocated_partition is not None:
             if unallocated_partition.current_amount + diff >= 0.0:
@@ -57,6 +61,6 @@ def user_home(request):
                 messages.error(request, f"Over allocated balance by ${abs(diff)}")
         else:
             messages.error(request, f"Over allocated balance by ${abs(diff)}")
-    partitons = Partition.objects.filter(owner=request.user)
-    return render(request, 'home.html', {'user_parts': partitons, 'user_profile': userprof})
+    partitions = Partition.objects.filter(owner=request.user)
+    return render(request, 'home.html', {'user_parts': partitions, 'user_profile': userprof})
 

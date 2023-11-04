@@ -74,28 +74,29 @@ def user_signup(request):
     return render(request, 'signup.html', {'form': form})
 
 @login_required
-def get_bank(request):
+def get_bank(request, return_url='/home/'):
     '''
     If no authentication token known, give login page. 
     On success or authentication known, get bank account info
     '''
     userprof = request.user.userprofile
-    if userprof is not None and userprof.valid_token:
-        print(userprof.access_token)
-        account_info = request_bank_accounts("Dummy Bank", userprof.token_type, userprof.access_token)
-        if account_info is None:
-            messages.error(request, f'Failed to retrieve accounts')
-            return render(request, 'bank_login.html')
-        elif account_info.status_code == 401:
-            # TODO: Refresh token before token expires
-            return bank_login_form_sequence(request, messages)
-        elif account_info.status_code != 200:
-            messages.error(request, f'Failed to retrieve accounts code: {account_info.status_code}')
-            return render(request, 'bank_login.html')
-        update_user_total(account_info, request, messages)
+    if userprof is None:
+        messages.error(request, "Can not find users profile")
         return redirect(reverse('users:home'))
-    elif request.method == "POST":
+
+    if request.method == "POST": # If submitting a login
         return bank_login_form_sequence(request, messages)
+
+    if need_bank_login(request, messages): # If cannot refresh token send bank login
+        return render(request, 'bank_login.html')
+    if userprof.valid_token: # checking if valid credentials
+        account_info = request_bank_accounts("Dummy Bank", userprof.token_type, userprof.access_token)
+        try:
+            update_user_total(account_info, request, messages)
+            return redirect(return_url)
+        except Exception as e:
+            messages.error(request, f"{e}")
+            return render(request, 'bank_login.html')
     else:
         return render(request, 'bank_login.html')
 
@@ -104,6 +105,8 @@ def transfer(request):
     '''
     Transfer money from one account to another
     '''
+    if need_bank_login(request, messages):
+        return redirect(reverse('logins:get_bank'), return_url=reverse('logins:transfer'))
     bank_accounts_list = get_bank_accounts("Dummy Bank", request, messages)
     try:
         form = BankTransferForm(bank_accounts=bank_accounts_list, data=request.POST or None)  # Moved this line here
@@ -117,7 +120,7 @@ def transfer(request):
             to_acc = form.cleaned_data['to_bank_account']
             amount = form.cleaned_data['amount']
             if from_acc != to_acc and Decimal(bank_accounts[from_acc]['balance']) >= amount:
-                response = request_transfer("Dummy Bank", request, from_acc, to_acc, amount)
+                response = request
                 if response is not None:
                     if response.status_code == 200:
                         messages.success(request, "Successful transfer")

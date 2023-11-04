@@ -115,6 +115,79 @@ def update_user_total(account_info, request, messages):
     messages.success(request, "Successfully updated user profile total")
     return None
 
+def request_refresh_access_token(request):
+    '''
+    Request a refreshed access token. Updates user profile.
+    '''
+    userprof = request.user.userprofile
+    if userprof is not None:
+        bank = userprof.bank
+        if bank is not None:
+            request_obj = bank.get_bank_account['refresh']
+            data = {
+                'grant_type': 'refresh_token',
+                'refresh_token': userprof.refresh_token,
+            }
+            response = requests.post(
+                request_obj['url'],
+                data=data,
+                auth=HTTPBasicAuth(bank.client_key, bank.secret_key)
+            )
+            return response
+
+def is_access_token_valid(request, acceptable_delta=15000):
+    '''
+    Checks if the users current access token is still valid.
+    The acceptable delta is defined here.
+    '''
+    userprof = request.user.userprofile
+    if userprof is not None and userprof.valid_token:
+        delta = datetime.datetime.now(timezone.utc) - userprof.last_refreshed
+        if delta.seconds >= acceptable_delta: # if token is invalid
+            userprof.valid_token = False
+            userprof.save()
+            return False
+        else:
+            return True
+    return False
+
+def need_bank_login(request, messages):
+    '''
+    Check if an access token is expired.
+    If so, refresh the token.
+    returns if a bank login sequence is needed
+    '''
+    userprof = request.user.userprofile
+    if userprof is None:
+        messages.error(request, "Could not find user profile")
+        return False
+
+    if not is_access_token_valid(request, 60):
+        response = request_refresh_access_token(request)
+        if response is None:
+            messages.error(request, "Could not make refresh request")
+            return False
+        if response.status_code == 200:
+            res_json = response.json()
+            userprof.access_token = res_json['access_token']
+            userprof.token_type = res_json['token_type']
+            userprof.last_refreshed = datetime.datetime.now(timezone.utc)
+            userprof.token_expire_time = res_json['expires_in']
+            userprof.refresh_token = res_json['refresh_token']
+            userprof.valid_token = True
+            userprof.save()
+            messages.success(request, "Token Successfully refreshed")
+            return False
+        elif response.status_code == 401:
+            return True
+        else:
+            messages.error(request, "Token could not be refreshed")
+            return True
+    else:
+        messages.error(request, "Token doesn't need to be refreshed yet")
+        return False
+
+
 def bank_login_form_sequence(request, messages):
     """
     Makes a request to bank to get credentials from login form.
@@ -185,22 +258,3 @@ def request_transfer(name, request, from_acc, to_acc, amount):
     elif not userprof.valid_token:
         messages.error(request, "Please login before making transfer")
     return None
-
-# def request_transfer(name, request, from_acc, to_acc, amount):
-#     bank = ExternalWebApp.objects.filter(name=name).first()
-#     if bank is not None and 'bank_credentials' in request.session:
-#         response_obj = request.session['bank_credentials']
-#         request_obj = bank.get_bank_account['transfer']
-#         headers = {
-#             'Authorization': f"{response_obj['token_type']} {response_obj['access_token']}",
-#         }
-#         data = request_obj['data']
-#         data['from_account_id'] = from_acc
-#         data['to_account_id'] = to_acc
-#         data['amount'] = amount
-#         response = requests.post(request_obj['url'], headers=headers, data=data)
-#         return response
-#     elif 'bank_credentials' not in request.session:
-#         messages.error(request, "Please login before making transfer")
-#     return None
-
