@@ -29,6 +29,8 @@ ALLOWED_HOSTS = ['*']
 
 SECURE_SSL_REDIRECT=True
 
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 LOGIN_URL = "/login/"
 
 # Application definition
