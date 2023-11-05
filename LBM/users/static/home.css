@@ -102,6 +102,7 @@ h2{
     flex-direction: column;
     gap: 10px;
 }
+
 .dots {
     flex-grow: 1;
     border-top: 3px dotted #704F70;
