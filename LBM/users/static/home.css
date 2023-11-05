@@ -88,7 +88,7 @@ h2{
     align-items: center;
 }
 
-.button_container {
+.login_buttons {
     display: flex;
     flex-direction: row;
     gap: 10px;
@@ -96,7 +96,7 @@ h2{
 
 .home_page_buttons {
     position:fixed;
-    top: 5px;
+    top: 20px;
     right: 30px;
     display: flex;
     flex-direction: column;
@@ -109,4 +109,9 @@ h2{
     margin: auto 0;
     position: relative;
     bottom: -8px;
+}
+
+.home_scree_buttons {
+    font-size: 3vw;
+    padding: 1vw;
 }
