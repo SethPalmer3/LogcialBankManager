@@ -39,6 +39,8 @@ def user_partition_edit(request, partition_id):
             form.save()
             messages.success(request, "Successfully changed partiton")
             return redirect('partitions:partition', partition_id=partition_id)
+        else:
+            print(form.errors)
     else:
         form = PartitionEditForm(instance=part)
 
@@ -84,7 +86,7 @@ def remove_partiton(request, partition_id):
 def edit_rule(request, rule_id):
     rule = PartitionRule.objects.get(id=rule_id)
     part = rule.get_partiton()
-    form = EditRule(request.POST or None, instance=part)
+    form = EditRule(request.POST or None, instance=rule)
     if request.method == "POST":
         if form.is_valid():
             form.save()
