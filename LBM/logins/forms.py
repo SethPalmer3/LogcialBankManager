@@ -15,11 +15,18 @@ class SignUpForm(forms.ModelForm):
             raise forms.ValidationError('Passwords dont\'t match.')
         return cd['password2']
 
+class BankSelectForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        banks = kwargs.pop('banks', [])
+        super().__init__(*args, **kwargs)
+        CHOICES = [(b['id'], b['name']) for b in banks]
+        self.fields['bank_select'] = forms.ChoiceField(choices=[('', 'Select a Bank')] + CHOICES)
+
+
 class BankTransferForm(forms.Form):
     def __init__(self, *args, **kwargs):
         bank_accounts = kwargs.pop('bank_accounts', [])
         super().__init__(*args, **kwargs)
-        print(bank_accounts)
         CHOICES = [(acc['id'], f"{acc['account_number']} - ${acc['balance']}") for acc in bank_accounts]
         self.fields['from_bank_account'] = forms.ChoiceField(choices=[('', 'Select a Bank Account')] + CHOICES)
         self.fields['to_bank_account'] = forms.ChoiceField(choices=[('', 'Select a Bank Account')] + CHOICES)

@@ -1,12 +1,12 @@
 from decimal import Decimal
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.db import transaction
 from django.urls import reverse
+from requests import RequestException
 
 from users.models import UserProfile
 from .forms import BankTransferForm, SignUpForm
@@ -84,11 +84,18 @@ def get_bank(request, return_url='/home/'):
         messages.error(request, "Can not find users profile")
         return redirect(reverse('users:home'))
 
-    if request.method == "POST": # If submitting a login
-        return bank_login_form_sequence(request, messages)
+    if userprof.bank is None:
+        return select_bank_sequence(request, messages)
 
-    if need_bank_login(request, messages): # If cannot refresh token send bank login
-        return render(request, 'bank_login.html')
+    try: 
+        if request.method == "POST": # If submitting a login
+            return bank_login_form_sequence(request, messages)
+
+        if need_bank_login(request, messages): # If cannot refresh token send bank login
+            return render(request, 'bank_login.html')
+    except RequestException as e:
+        messages.error(request, f"Cannot make connection to {userprof.bank.__str__()}")
+        return redirect(reverse('users:home'))
     if userprof.valid_token: # checking if valid credentials
         account_info = request_bank_accounts("Dummy Bank", userprof.token_type, userprof.access_token)
         try:
@@ -99,6 +106,31 @@ def get_bank(request, return_url='/home/'):
             return render(request, 'bank_login.html')
     else:
         return render(request, 'bank_login.html')
+
+def select_bank(request):
+    banks = [{'id': b.id.__str__(), 'name': b.name} for b in ExternalWebApp.objects.all()]
+    try:
+        bank_form = BankSelectForm(banks=banks, data=request.POST or None)
+    except Exception as e:
+        messages.error(request, f"Cant create bank select form {e}")
+        return redirect(reverse('users:home'))
+    if request.method == "POST":
+        # Make selection
+        if bank_form.is_valid():
+            selected_bank_data = bank_form.cleaned_data['bank_select']
+            print(selected_bank_data)
+            selected_bank = ExternalWebApp.objects.get(id=selected_bank_data)
+            userprof = request.user.userprofile
+            if userprof is None:
+                messages.error(request, "Could not find user profile")
+                return redirect(reverse('users:home'))
+            userprof.bank = selected_bank
+            userprof.save()
+        return redirect(reverse('logins:get_bank'))
+    else:
+        # Provide selections
+        return render(request, 'bank_select.html', context={'form': bank_form})
+
 
 @login_required
 def transfer(request):

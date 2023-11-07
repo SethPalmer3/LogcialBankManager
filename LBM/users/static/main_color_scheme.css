@@ -2,28 +2,32 @@
     font-family: "Montserrat";
     src: url('/static/Montserrat-VariableFont_wght.ttf')
 }
-.background {
-    background-color: #D4CBC0;
+@font-face{
+    font-family: "Orbitron";
+    src: url('/static/Orbitron-VariableFont_wght.ttf')
+}
+@font-face {
+    font-family: "Rubik";
+    src: url("RubikMonoOne-Regular.ttf")
 }
 
-.button_hover:hover {
-    background-color: #A1AEA0;
-}
+:root{
+    --back-color: #D4CBC0;
+    --button-hover-color: #A1AEA0;
+    --outline-color: #806460; 
+    --text-color: #704F70; 
 
-.outline {
-    outline-color: #806460;
-    border-color: #806460;
-}
+    --text-font: "Montserrat";
+    --header-font: "Rubik";
+    --subheader-font: "Orbitron";
 
-.text {
-    color: #704F70;
-    font-family: "Montserrat";
-}
+    --text-size: 23px;
+    --header-size: 40px;
+    --subheader-size: 24px;
 
-.success {
-    color: #228B22;
-}
+    --border-radius: 10px;
+    --input-padding: 20px;
 
-.error {
-    color: #882D17;
+    --success-color: #228B22; 
+    --error-color: #882D17;
 }

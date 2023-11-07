@@ -1,7 +1,7 @@
 {% load static %}
-<link rel="stylesheet" href="{% static 'home.css' %}">
 <link rel="stylesheet" href="{% static 'main_color_scheme.css' %}">
 <link rel="stylesheet" href="{% static 'regular_styles.css' %}">
+<link rel="stylesheet" href="{% static 'home.css' %}">
 <!DOCTYPE html>
 <html>
 <head>
@@ -12,7 +12,7 @@
     {% if user_profile.total_amount %}
     <h2 class="text subheading_text"> Current total amount: ${{ user_profile.total_amount }}</h2>
     {% else %}
-    <h2 class="text"> No current set total amount </h2>
+    <h2 class="text subheading_text"> No current set total amount </h2>
     {% endif %}
     <!-- <br> -->
     <div class="partition_container">
@@ -37,6 +37,7 @@
             <a href="{% url 'logins:get_bank' %}" class="anchor_wrap text outline button_hover home_screen_buttons"> Bank Login </a>
             <a href="{% url 'logins:logout' %}" class="anchor_wrap text outline button_hover home_screen_buttons"> Logout </a>
         </div>
+        <a href="{% url 'logins:select_bank' %}" class="anchor_wrap text outline button_hover"> Select a Bank </a>
         <a href="{% url 'partitions:add_partition' %}" class="anchor_wrap text outline button_hover"> Create a Partiton </a>
     </div>
     <!-- <a href="{% url 'logins:transfer' %}" class="anchor_wrap text outline button_hover"> Transfer </a> -->

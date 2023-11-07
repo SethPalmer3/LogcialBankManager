@@ -11,11 +11,6 @@ h2{
     font-size: 40px;
 }
 
-/* a { */
-/*     text-align: center; */
-/*     text-decoration: none; */
-/* } */
-
 input[type="submit"], button{
   display: block;
   margin-left: 20px;
