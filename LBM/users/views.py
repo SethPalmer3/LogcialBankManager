@@ -49,7 +49,7 @@ def user_home(request):
         if unallocated_partition is not None:
             unallocated_partition.delete()
         partitions = Partition.objects.filter(owner=request.user)
-        return render(request, 'home.html', {'user_parts': partitions, 'user_profile': userprof})
+        return render(request, 'home.html', {'user_parts': partitions, 'user_profile': userprof, 'unalloc': unallocated_partition})
 
     if diff >= 0.0: # checking if partition total is the same or lower than user total
         if unallocated_partition is not None:

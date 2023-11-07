@@ -16,12 +16,13 @@
     {% endif %}
     <!-- <br> -->
     <div class="partition_container">
-        
+        {% if unalloc %}
         <a href="{% url 'partitions:partition' unalloc.id %}">
             <div class="unallocated outline text button_hover">
                 <p class="partition_label"> {{ unalloc.label }} - ${{ unalloc.current_amount }} </p>
             </div>
         </a>
+        {% endif %}
         {% for p in user_parts %}
         <a href="{% url 'partitions:partition' p.id %}" class="partition_wrap_link text outline">
             <div class="partition_wrap outline button_hover">

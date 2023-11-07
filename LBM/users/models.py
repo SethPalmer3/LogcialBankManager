@@ -38,33 +38,3 @@ class ExternalWebApp(models.Model):
     def __str__(self) -> str:
         return self.name
 
-    def get_auth_url(self):
-        '''
-        WIP
-        '''
-        return self.get_bank_account[GET_CREDS]['url']
-
-    def get_bank_account_url(self):
-        '''
-        WIP
-        '''
-        return self.get_bank_account[GET_ACCS]['url']
-
-    def get_transfer_url(self):
-        '''
-        WIP
-        '''
-        return self.get_bank_account[GET_TRANS]['url']
-
-    def construct_credentials_headers(self, username, password):
-        '''
-        WIP
-        '''
-        tmp = self.get_bank_account[GET_CREDS]['headers'].copy()
-        tmp['grant_type']['username'] = username
-        tmp['grant_type']['password'] = password
-        tmp['creds']['client'] = self.client_key
-        tmp['creds']['secret'] = self.secret_key
-        return tmp
-
-

@@ -3,8 +3,8 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
-from .models import Partition, PartitionRule
-from .forms import EditRule, NewPartiton, PartitionEditForm
+from .models import Partition
+from .forms import NewPartiton, PartitionEditForm 
 
 from users.helper_funcs import *
 
@@ -16,11 +16,10 @@ def user_partition_view(request, partition_id):
     '''
     try:
         part = Partition.objects.get(id=partition_id)
-        rules = PartitionRule.objects.filter(partition=part)
     except:
         messages.error(request, "Could Not Find Partition")
         return redirect(reverse('users:home'))
-    return render(request, 'partition.html', {'partition_data': part, 'partition_rules': rules})
+    return render(request, 'partition.html', {'partition_data': part})
 
 @login_required(login_url="/login/")
 def user_partition_edit(request, partition_id):
@@ -82,19 +81,3 @@ def remove_partiton(request, partition_id):
 
     return redirect(reverse('users:home')) # Redirects to their new home screen
 
-@login_required(login_url="/login/")
-def edit_rule(request, rule_id):
-    rule = PartitionRule.objects.get(id=rule_id)
-    part = rule.get_partiton()
-    form = EditRule(request.POST or None, instance=rule)
-    if request.method == "POST":
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Successfully changed rule")
-            return redirect('partitions:partition', partition_id=part.id)
-        else:
-            messages.error(request, "Invalid form")
-            return render(request, 'edit_rule.html', context={'form': form, 'part_id': part.id})
-    else:
-        form = EditRule(instance=rule)
-        return render(request, 'edit_rule.html', context={'form': form, 'part_id': part.id})

@@ -14,16 +14,6 @@
     {% else %}
     <p> Context didn't work </p>
     {% endif %}
-    <div class="rules_container">
-    {% for r in partition_rules %}
-        <a class="rules_wrap_link" href="{% url 'partitions:edit_rule' r.id %}">
-            <div class="rules_wrap outline text">
-                    <p class="text"> {{ r.name }} </p>
-                    <p class="text"> {{ r.condition_type }} </p>
-            </div>
-        </a>
-    {% endfor %}
-    </div>
     <div class="button_container">
         {% if not partition_data.is_unallocated %}
         <a href="{% url 'partitions:remove_partition' partition_data.id %}" class="anchor_wrap text outline button_hover"> Remove Partiton </a>

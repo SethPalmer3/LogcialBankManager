@@ -7,5 +7,4 @@ urlpatterns = [
     path('partitionedit/<uuid:partition_id>/', views.user_partition_edit, name='edit_partition'),
     path('addpartition/', views.add_partition, name='add_partition'),
     path('removepartition/<uuid:partition_id>/', views.remove_partiton, name='remove_partition'),
-    path('editrule/<uuid:rule_id>/', views.edit_rule, name='edit_rule'),
 ] 
