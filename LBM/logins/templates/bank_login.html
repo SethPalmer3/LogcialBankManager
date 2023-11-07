@@ -1,7 +1,7 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'main_color_scheme.css' %}">
 <link rel="stylesheet" href="{% static 'regular_styles.css' %}">
-<link rel="stylesheet" href="{% static 'logins/regular_styles.css' %}">
+<link rel="stylesheet" href="{% static 'logins/bank_login.css' %}">
 <!DOCTYPE html>
 <html>
 <head>
@@ -21,7 +21,7 @@
     <a href="{% url 'users:home' %}" class="signup anchor_wrap text outline button_hover"> Cancel </a>
     <br>
     {% if messages %}
-    <ul class="messages outline sector">
+    <ul class="messages outline sector right_justified">
         {% for message in messages %}
         <li{% if message.tags %} class="{{ message.tags }} text inner_sector"{% endif %}>{{ message }}</li>
         {% endfor %}

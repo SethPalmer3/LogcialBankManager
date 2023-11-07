@@ -86,7 +86,6 @@ def get_bank(request, return_url='/home/'):
 
     if userprof.bank is None:
         return select_bank_sequence(request, messages)
-
     try: 
         if request.method == "POST": # If submitting a login
             return bank_login_form_sequence(request, messages)

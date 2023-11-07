@@ -18,6 +18,7 @@ def index(request):
 
 def invalidate_user_token(request):
     request.user.userprofile.valid_token = False
+    request.user.userprofile.refresh_token = None
     request.user.userprofile.save()
     return redirect(reverse('users:home'))
 

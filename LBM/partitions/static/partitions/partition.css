@@ -10,3 +10,34 @@ h1 {
     font-size: 20px;
 }
 
+.rules_wrap_link{
+    display: inline-block;
+    text-decoration: none;
+    vertical-align: top;
+}
+
+.rules_wrap {
+    order: 2;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-width: 3px;
+    border-style: solid;
+    border-radius: 10px;
+    width: 60vw; 
+    height: 10vh;
+    padding: 5px;
+    vertical-align: top;
+    transition: background-color, scale 0.3s;
+    /* margin-left: 10px; */
+    margin-top: 10px;
+}
+
+.rules_wrap:hover {
+  scale: 105%;
+}
+
+.rules_wrap:active{
+  background-color: grey;
+}
