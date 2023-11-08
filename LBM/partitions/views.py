@@ -1,10 +1,12 @@
+from django.db import transaction
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from requests import delete
 
-from .models import Partition
-from .forms import NewPartiton, PartitionEditForm 
+from .models import Partition, Rule, RuleBiopExpression, RuleUniopExpression
+from .forms import NewPartiton, PartitionEditForm, RuleAttributeSelectForm, RuleExpressionAddForm, RuleExpressionEditForm, RuleNameAndEntitySelectForm, RuleOperatorSelectForm, RuleValueSetForm 
 
 from users.helper_funcs import *
 
@@ -81,3 +83,151 @@ def remove_partiton(request, partition_id):
 
     return redirect(reverse('users:home')) # Redirects to their new home screen
 
+
+@login_required(login_url="/login/")
+def add_rule(request, partition_id):
+    user = request.user
+    # userprof = user.userprofile
+    part = Partition.objects.get(id=partition_id)
+    form = RuleNameAndEntitySelectForm(user_id=user.id, partition_id=part.id, data=request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            new_rule = Rule()
+            (new_rule.entity_id, new_rule.entity_type, new_rule.entity_name) = form.cleaned_data['entity'].split(',')
+            new_rule.name = form.cleaned_data['name']
+            new_rule.partition = part
+            new_rule.save()
+            return redirect('partitions:set_attribute', rule_id=new_rule.id)
+    return render(request, 'rule_step.html', context={'form': form})
+
+@login_required(login_url="/login/")
+def set_rule_attribute(request, rule_id):
+    # user = request.user
+    rule = Rule.objects.get(id=rule_id)
+    form = RuleAttributeSelectForm(ent_type=rule.entity_type, data=request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            rule.attribute = form.cleaned_data['attribute']
+            rule.attribute_type = "float"
+            rule.save()
+            return redirect('partitions:set_operation', rule_id=rule_id)
+    return render(request, 'rule_step.html', context={'form': form})
+
+@login_required(login_url="/login/")
+def set_rule_operator(request, rule_id):
+    rule = Rule.objects.get(id=rule_id)
+    form = RuleOperatorSelectForm(attr_type=rule.attribute_type,data=request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            rule.operation = form.cleaned_data['operators']
+            rule.save()
+            return redirect('partitions:set_value', rule_id=rule_id)
+    return render(request, 'rule_step.html', context={'form': form})
+
+@login_required(login_url="/login/")
+def set_rule_value(request, rule_id):
+    rule = Rule.objects.get(id=rule_id)
+    form = RuleValueSetForm(type_s=rule.attribute_type, data=request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            rule.value = form.cleaned_data['value']
+            rule.save()
+            return redirect('partitions:partition', partition_id=rule.partition.id)
+    return render(request, 'rule_step.html', context={'form': form})
+
+@login_required(login_url="/login/")
+def rule_expr_view(request, partition_id):
+    # root_expr = RuleBiopExpression.objects.all().first()
+    part = Partition.objects.get(id=partition_id)
+    root_expr = RuleBiopExpression.objects.get(partition=part, is_root=True)
+    return render(request, 'rule_expr.html', context={'expr': root_expr})
+
+@login_required(login_url="/login/")
+def rule_expr_edit(request, expr_id):
+    expr_node = RuleBiopExpression.objects.get(id=expr_id)
+    form = RuleExpressionEditForm(instance=expr_node, data=request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            if expr_node.is_value:
+                expr_node.value.set_appropiate_value(form.cleaned_data['value_input'])
+                expr_node.value.save()
+            else:
+                expr_node.operator = form.cleaned_data['operator']
+                expr_node.save()
+            return redirect('partitions:rule_expr_view', partition_id=expr_node.partition.id)
+    return render(request, 'rule_expr_edit.html', context={'form': form, 'partition_id': expr_node.partition.id, 'expr': expr_node})
+
+@login_required(login_url="/login/")
+def rule_expr_unset_l(request, expr_id):
+    expr_node = RuleBiopExpression.objects.get(id=expr_id)
+    expr_node.left_expr.delete()
+    return redirect('partitions:rule_expr_view', partition_id=expr_node.partition.id)
+
+@login_required(login_url="/login/")
+def rule_expr_unset_r(request, expr_id):
+    expr_node = RuleBiopExpression.objects.get(id=expr_id)
+    expr_node.right_expr.delete()
+    return redirect('partitions:rule_expr_view', partition_id=expr_node.partition.id)
+
+@login_required(login_url="/login/")
+def rule_expr_set_l(request, expr_id):
+    form = RuleExpressionAddForm(data=request.POST or None)
+    expr_node = RuleBiopExpression.objects.get(id=expr_id)
+    if request.method == "POST":
+        if form.is_valid():
+            if form.cleaned_data['expr_type'] == 'value':
+                with transaction.atomic():
+                    new_value = RuleUniopExpression()
+                    new_value.value_type = form.cleaned_data['value_type']
+                    new_value.set_appropiate_value(form.cleaned_data['value_input'])
+                    new_value.save()
+                    new_expr = RuleBiopExpression()
+                    new_expr.partition = expr_node.partition
+                    new_expr.value = new_value
+                    new_expr.is_value = True
+                    new_expr.save()
+                    expr_node.left_expr = new_expr
+                    expr_node.save()
+                return redirect('partitions:rule_expr_view', partition_id=expr_node.partition.id)
+            elif form.cleaned_data['expr_type'] == 'operation':
+                with transaction.atomic():
+                    new_op = RuleBiopExpression()
+                    new_op.partition = expr_node.partition
+                    new_op.operator = form.cleaned_data['operator']
+                    new_op.save()
+                    expr_node.left_expr = new_op
+                    expr_node.save()
+                return redirect('partitions:rule_expr_view', partition_id=expr_node.partition.id)
+    return render(request, "rule_expr_add.html", context={'form': form, 'partition_id': expr_node.partition.id})
+
+@login_required(login_url="/login/")
+def rule_expr_set_r(request, expr_id):
+    form = RuleExpressionAddForm(data=request.POST or None)
+    expr_node = RuleBiopExpression.objects.get(id=expr_id)
+    expr_node = RuleBiopExpression.objects.get(id=expr_id)
+    if request.method == "POST":
+        if form.is_valid():
+            if form.cleaned_data['expr_type'] == 'value':
+                with transaction.atomic():
+                    new_value = RuleUniopExpression()
+                    new_value.value_type = form.cleaned_data['value_type']
+                    new_value.set_appropiate_value(form.cleaned_data['value_input'])
+                    new_value.save()
+                    new_expr = RuleBiopExpression()
+                    new_expr.partition = expr_node.partition
+                    new_expr.value = new_value
+                    new_expr.is_value = True
+                    new_expr.save()
+                    expr_node.right_expr = new_expr
+                    expr_node.save()
+                return redirect('partitions:rule_expr_view', partition_id=expr_node.partition.id)
+            elif form.cleaned_data['expr_type'] == 'operation':
+                with transaction.atomic():
+                    new_op = RuleBiopExpression()
+                    new_op.partition = expr_node.partition
+                    new_op.operator = form.cleaned_data['operator']
+                    new_op.save()
+                    expr_node.right_expr = new_op
+                    expr_node.save()
+                return redirect('partitions:rule_expr_view', partition_id=expr_node.partition.id)
+    return render(request, "rule_expr_add.html", context={'form': form, 'partition_id': expr_node.partition.id})

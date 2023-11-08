@@ -1,0 +1,34 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'main_color_scheme.css' %}">
+<link rel="stylesheet" href="{% static 'regular_styles.css' %}">
+<script src="{% static 'partitions/rule_expr_add.js' %}"></script>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rule Expression Edit</title>
+</head>
+<body class="background">
+    <form method="post">
+        {% csrf_token %}
+        {{ form.expr_type }}
+        <div id="value-fields" style="display:none;">
+        {{ form.value_type }}
+        {{ form.value_input }}
+        </div>
+        <div id="operation-fields" style="display:none;">
+        {{ form.operator }}
+        </div>
+        <input type="submit" value="Add Rule Expression">
+      <input type="submit" value="Submit" class="anchor_wrap text outline button_hover button">
+    </form>
+    <a href="{% url 'partitions:rule_expr_view' partition_id %}" class="anchor_wrap text outline button_hover"> Cancel </a>
+    {% if messages %}
+    <ul class="messages sector right_justified">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }} text inner_sector"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</body>
+</html>

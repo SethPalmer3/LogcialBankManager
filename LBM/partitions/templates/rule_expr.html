@@ -1,0 +1,21 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'main_color_scheme.css' %}">
+<link rel="stylesheet" href="{% static 'regular_styles.css' %}">
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New Rule Page</title>
+</head>
+<body class="background">
+    {% if expr %}
+        {% include "tree_expr.html" %} = {{ expr.evaluate }}
+    {% endif %}
+    {% if messages %}
+    <ul class="messages sector right_justified">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</body>
+</html>

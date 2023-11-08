@@ -21,7 +21,6 @@ class UserProfile(models.Model):
     token_expire_time = encrypt(models.IntegerField(default=0))
     refresh_token = encrypt(models.TextField(null=True, blank=True, max_length=30))
 
-
     objects = models.Manager()
 
     def __str__(self):
