@@ -17,10 +17,10 @@ def rule_entity_stringify(ent_id, ent_type, ent_name, is_current=False):
 
 def entities_list(user_id, partition_id):
     ret = []
-    for p in Partition.objects.filter(owner=user_id): # Get all partitons
+    userprof = UserProfile.objects.get(id=user_id)
+    user = userprof.user
+    for p in Partition.objects.filter(owner=user): # Get all partitons
         ret.append(rule_entity_stringify(p.id, "Partition", p.label, p.id==partition_id))
-    user = User.objects.get(id=user_id)
-    userprof = UserProfile.objects.get(user=user)
     ret.append(rule_entity_stringify(userprof.pk, "User", user.username))
     return ret
 
@@ -35,8 +35,12 @@ def operations_list(type_s):
     return ret
 
 
-def entity_attr_list(ent_type):
+def entity_attr_list(ent_type=None):
     ret = []
+    if ent_type is None:
+        ret.append(('Partition,init_amount', 'Inital Amount'))
+        ret.append(('Partition,current_amount', 'Current Amount'))
+        ret.append(('User,total_amount', 'Total Amount'))
     if ent_type == "Partition":
         ret.append(('init_amount', 'Inital Amount'))
         ret.append(('current_amount', 'Current Amount'))
@@ -106,16 +110,25 @@ class RuleExpressionEditForm(forms.Form):
         super(RuleExpressionEditForm, self).__init__(*args, **kwargs)
         if instance is not None:
             if instance.is_value:
-                if instance.value.value_type == 'float':
-                    self.fields['value_input'] = forms.FloatField(initial=instance.value.get_appropiate_value())
-                elif instance.value.value_type == 'decimal':
-                    self.fields['value_input'] = forms.DecimalField(max_digits=15, decimal_places=2, initial=instance.value.get_appropiate_value())
-                elif instance.value.value_type == 'str' or instance.value.value_type == 'string':
-                    self.fields['value_input'] = forms.CharField(max_length=50, initial=instance.value.get_appropiate_value())
-                elif instance.value.value_type == 'int':
-                    self.fields['value_input'] = forms.IntegerField()
+                if not instance.value.is_reference:
+                    if instance.value.value_type == 'float':
+                        self.fields['value_input'] = forms.FloatField(initial=instance.value.get_appropiate_value())
+                    elif instance.value.value_type == 'decimal':
+                        self.fields['value_input'] = forms.DecimalField(max_digits=15, decimal_places=2, initial=instance.value.get_appropiate_value())
+                    elif instance.value.value_type == 'str' or instance.value.value_type == 'string':
+                        self.fields['value_input'] = forms.CharField(max_length=50, initial=instance.value.get_appropiate_value())
+                    elif instance.value.value_type == 'int':
+                        self.fields['value_input'] = forms.IntegerField()
+                    else:
+                        self.fields['value_input'] = forms.CharField(max_length=50, initial=instance.value.get_appropiate_value())
                 else:
-                    self.fields['value_input'] = forms.CharField(max_length=50, initial=instance.value.get_appropiate_value())
+                    if instance.partition.owner.id and instance.partition.id:
+                        ref_ents = entities_list(instance.partition.owner.userprofile.id, instance.partition.id)
+                        ref_attrs = entity_attr_list()
+                        self.fields['ref_attrs'] = forms.ChoiceField(choices=ref_attrs, required=False)
+                        # self.fields['ref_type'] = forms.ChoiceField(choices=self.EXPR_REF_TYPES, required=False)
+                        self.fields['ref_ents'] = forms.ChoiceField(choices=ref_ents, required=False)
+
             else:
                 self.fields['operator'] = forms.ChoiceField(choices=[('', 'Select an Operation')] + self.OPS)
 
@@ -137,8 +150,8 @@ class RuleExpressionAddForm(forms.Form):
         ('int', 'Integer'),
     ]
     EXPR_REF_TYPES = [
-        ('partition', 'Partition'),
-        ('user', 'User'),
+        ('Partition', 'Partition'),
+        ('User', 'User'),
     ]
     EXPR_TYPE_CHOICES = [
         ('value', 'Value'),
@@ -157,6 +170,8 @@ class RuleExpressionAddForm(forms.Form):
         self.fields['operator'] = forms.ChoiceField(choices=self.OPS, required=False)
         if user_id and partition_id:
             ref_ents = entities_list(user_id, partition_id)
-            self.fields['ref_type'] = forms.ChoiceField(choices=self.EXPR_REF_TYPES, required=False)
+            ref_attrs = entity_attr_list()
+            self.fields['ref_attrs'] = forms.ChoiceField(choices=ref_attrs, required=False)
+            # self.fields['ref_type'] = forms.ChoiceField(choices=self.EXPR_REF_TYPES, required=False)
             self.fields['ref_ents'] = forms.ChoiceField(choices=ref_ents, required=False)
 

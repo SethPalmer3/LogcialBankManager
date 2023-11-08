@@ -4,6 +4,8 @@ from django_cryptography.fields import encrypt
 import uuid
 from decimal import Decimal
 
+from users.models import UserProfile
+
 # Create your models here.
 class Partition(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -51,6 +53,7 @@ class RuleUniopExpression(models.Model):
     is_reference = models.BooleanField(default=False)
     reference_id = encrypt(models.CharField(max_length=30, null=True, blank=True))
     reference_type = encrypt(models.CharField(max_length=50, null=True, blank=True))
+    reference_attr = encrypt(models.CharField(max_length=50, null=True, blank=True))
 
     def __str__(self):
         return self.get_appropiate_value().__str__()
@@ -71,6 +74,18 @@ class RuleUniopExpression(models.Model):
             'string': self.string_value,
             'int': self.int_value
         }
+        UNIOP_TYPE_CONVERT = {
+            'Partition': Partition,
+            'User': UserProfile,
+        }
+        if self.is_reference:
+            try:
+                print(getattr(UNIOP_TYPE_CONVERT[self.reference_type].objects.get(id=self.reference_id),self.reference_attr))
+                return getattr(UNIOP_TYPE_CONVERT[self.reference_type].objects.get(id=self.reference_id),self.reference_attr)
+            except UserProfile.DoesNotExist:
+                temp = int(self.reference_id)
+                return getattr(UNIOP_TYPE_CONVERT[self.reference_type].objects.get(pk=temp),self.reference_attr)
+
         return UNIOP_CONVERT[self.value_type]
     def get_type(self):
         return self.value_type
@@ -95,7 +110,7 @@ class RuleBiopExpression(models.Model):
     value = models.ForeignKey(to=RuleUniopExpression, null=True, blank=True, on_delete=models.SET_NULL)
     operator = encrypt(models.CharField(max_length=20, choices=OPS, null=True, blank=True))
     def __str__(self):
-        if self.value is not None:
+        if self.value is not None and self.is_value:
             return self.value.__str__()
         return f"({self.left_expr.__str__()} {self.operator} {self.right_expr.__str__()}) = {self.evaluate()}"
     def evaluate(self):
