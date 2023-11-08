@@ -171,9 +171,12 @@ def rule_expr_unset_r(request, expr_id):
 
 @login_required(login_url="/login/")
 def rule_expr_set_l(request, expr_id):
-    form = RuleExpressionAddForm(data=request.POST or None)
     expr_node = RuleBiopExpression.objects.get(id=expr_id)
+    user = request.user
+    part = expr_node.partition
+    form = RuleExpressionAddForm(user_id=user.id, partition_id=part.id, data=request.POST or None)
     if request.method == "POST":
+        print(form.is_valid())
         if form.is_valid():
             if form.cleaned_data['expr_type'] == 'value':
                 with transaction.atomic():
@@ -202,9 +205,9 @@ def rule_expr_set_l(request, expr_id):
 
 @login_required(login_url="/login/")
 def rule_expr_set_r(request, expr_id):
+    expr_node = RuleBiopExpression.objects.get(id=expr_id)
+    user = expr_node.partition.owner
     form = RuleExpressionAddForm(data=request.POST or None)
-    expr_node = RuleBiopExpression.objects.get(id=expr_id)
-    expr_node = RuleBiopExpression.objects.get(id=expr_id)
     if request.method == "POST":
         if form.is_valid():
             if form.cleaned_data['expr_type'] == 'value':
@@ -231,3 +234,9 @@ def rule_expr_set_r(request, expr_id):
                     expr_node.save()
                 return redirect('partitions:rule_expr_view', partition_id=expr_node.partition.id)
     return render(request, "rule_expr_add.html", context={'form': form, 'partition_id': expr_node.partition.id})
+
+def rule_expr_delete(request, expr_id):
+    expr_node = RuleBiopExpression.objects.get(id=expr_id)
+    part = expr_node.partition
+    expr_node.delete()
+    return redirect('partitions:rule_expr_view', partition_id=part.id)

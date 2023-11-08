@@ -16,10 +16,13 @@
         {{ form.value_type }}
         {{ form.value_input }}
         </div>
+        <div id="ref-fields" style="display:none;">
+        {{ form.ref_types }}
+        {{ form.ref_ents }}
+        </div>
         <div id="operation-fields" style="display:none;">
         {{ form.operator }}
         </div>
-        <input type="submit" value="Add Rule Expression">
       <input type="submit" value="Submit" class="anchor_wrap text outline button_hover button">
     </form>
     <a href="{% url 'partitions:rule_expr_view' partition_id %}" class="anchor_wrap text outline button_hover"> Cancel </a>

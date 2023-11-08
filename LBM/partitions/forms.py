@@ -136,13 +136,27 @@ class RuleExpressionAddForm(forms.Form):
         ('string', 'String'),
         ('int', 'Integer'),
     ]
-    expr_type_choices = [
+    EXPR_REF_TYPES = [
+        ('partition', 'Partition'),
+        ('user', 'User'),
+    ]
+    EXPR_TYPE_CHOICES = [
         ('value', 'Value'),
+        ('reference', 'External Reference'),
         ('operation', 'Operation'),
     ]
-    
-    expr_type = forms.ChoiceField(choices=expr_type_choices, required=False)
-    value_type = forms.ChoiceField(choices=UNIOP_TYPES, required=False)
-    value_input = forms.CharField(required=False)
-    operator = forms.ChoiceField(choices=OPS, required=False)
+    def __init__(self, *args, **kwargs):
+        user_id = kwargs.pop('user_id', None)
+        partition_id = kwargs.pop('partition_id', None)
+        
+        super(RuleExpressionAddForm, self).__init__(*args, **kwargs)
+
+        self.fields['expr_type'] = forms.ChoiceField(choices=self.EXPR_TYPE_CHOICES, required=False)
+        self.fields['value_type'] = forms.ChoiceField(choices=self.UNIOP_TYPES, required=False)
+        self.fields['value_input'] = forms.CharField(required=False)
+        self.fields['operator'] = forms.ChoiceField(choices=self.OPS, required=False)
+        if user_id and partition_id:
+            ref_ents = entities_list(user_id, partition_id)
+            self.fields['ref_type'] = forms.ChoiceField(choices=self.EXPR_REF_TYPES, required=False)
+            self.fields['ref_ents'] = forms.ChoiceField(choices=ref_ents, required=False)
 

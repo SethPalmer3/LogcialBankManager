@@ -48,6 +48,10 @@ class RuleUniopExpression(models.Model):
     decimal_value = encrypt(models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True))
     string_value = encrypt(models.CharField(max_length=50, null=True, blank=True))
     int_value = encrypt(models.IntegerField(null=True, blank=True))
+    is_reference = models.BooleanField(default=False)
+    reference_id = encrypt(models.CharField(max_length=30, null=True, blank=True))
+    reference_type = encrypt(models.CharField(max_length=50, null=True, blank=True))
+
     def __str__(self):
         return self.get_appropiate_value().__str__()
     def set_appropiate_value(self, value):

@@ -13,6 +13,7 @@ urlpatterns = [
     path('rule-value-set/<uuid:rule_id>/', views.set_rule_value, name='set_value'),
     path('rule-expr-view/<uuid:partition_id>/', views.rule_expr_view, name='rule_expr_view'),
     path('rule-expr-edit/<uuid:expr_id>/', views.rule_expr_edit, name='rule_expr_edit'),
+    path('rule-expr-delete/<uuid:expr_id>/', views.rule_expr_delete, name='rule_expr_delete'),
     path('rule-expr-unset-l/<uuid:expr_id>/', views.rule_expr_unset_l, name='rule_expr_unset_l'),
     path('rule-expr-unset-r/<uuid:expr_id>/', views.rule_expr_unset_r, name='rule_expr_unset_r'),
     path('rule-expr-set-l/<uuid:expr_id>/', views.rule_expr_set_l, name='rule_expr_set_l'),

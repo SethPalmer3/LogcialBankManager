@@ -18,6 +18,7 @@
         <a href="{% url 'partitions:rule_expr_unset_l' expr.id %}" class="anchor_wrap text outline button_hover"> Unset Left Value {{ expr.left_expr }} </a>
         <a href="{% url 'partitions:rule_expr_unset_r' expr.id %}" class="anchor_wrap text outline button_hover"> Unset Right Value {{ expr.right_expr }} </a>
     {% endif %}
+    <a href="{% url 'partitions:rule_expr_delete' expr.id %}" class="anchor_wrap text outline button_hover"> Delete </a>
     <a href="{% url 'partitions:rule_expr_view' partition_id %}" class="anchor_wrap text outline button_hover"> Cancel </a>
     {% if messages %}
     <ul class="messages sector right_justified">
