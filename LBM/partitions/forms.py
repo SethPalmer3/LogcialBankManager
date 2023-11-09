@@ -1,53 +1,8 @@
 from django import forms
-from django.contrib.admin import display
-from django.contrib.auth.models import User
-from django.db.models import fields
 
-from users.models import UserProfile
-from .models import Partition, Rule, RuleBiopExpression
+from .partition_globals import *
+from .models import Partition
 
-def rule_entity_stringify(ent_id, ent_type, ent_name, is_current=False):
-    value = f"{ent_id},{ent_type},{ent_name}"
-    if is_current:
-        disp = f"[{ent_type}]: {ent_name}(current)"
-    else:
-        disp = f"[{ent_type}]: {ent_name}"
-
-    return (value,disp)
-
-def entities_list(user_id, partition_id):
-    ret = []
-    userprof = UserProfile.objects.get(id=user_id)
-    user = userprof.user
-    for p in Partition.objects.filter(owner=user): # Get all partitons
-        ret.append(rule_entity_stringify(p.id, "Partition", p.label, p.id==partition_id))
-    ret.append(rule_entity_stringify(userprof.pk, "User", user.username))
-    return ret
-
-def operations_list(type_s):
-    ret = []
-    if type_s == "float":
-        ret.append(('eq', 'Equals'))
-        ret.append(('lt', 'Less Than'))
-        ret.append(('gt', 'Greater Than'))
-        ret.append(('lte', 'Less Than or Equal'))
-        ret.append(('gte', 'Greater Than or Equal'))
-    return ret
-
-
-def entity_attr_list(ent_type=None):
-    ret = []
-    if ent_type is None:
-        ret.append(('Partition,init_amount', 'Inital Amount'))
-        ret.append(('Partition,current_amount', 'Current Amount'))
-        ret.append(('User,total_amount', 'Total Amount'))
-    if ent_type == "Partition":
-        ret.append(('init_amount', 'Inital Amount'))
-        ret.append(('current_amount', 'Current Amount'))
-    elif ent_type == "User":
-        ret.append(('total_amount', 'Total Amount'))
-
-    return ret
 
 class PartitionEditForm(forms.ModelForm):
     class Meta:
@@ -62,48 +17,7 @@ class NewPartiton(forms.ModelForm):
         model = Partition
         fields = ['label', 'current_amount', 'description']
 
-class RuleNameAndEntitySelectForm(forms.Form):
-    def __init__(self, *args, **kwargs):
-        user_id = kwargs.pop("user_id")
-        partition_id = kwargs.pop("partition_id")
-        entities = entities_list(user_id, partition_id)
-        super().__init__(*args, **kwargs)
-        self.fields['name'] = forms.CharField(label="Rule Name", max_length=50)
-        self.fields['entity'] = forms.ChoiceField(choices=[('','Select a Entity')] + entities)
-
-class RuleAttributeSelectForm(forms.Form):
-    def __init__(self, *args, **kwargs):
-        entity_type = kwargs.pop("ent_type")
-        super().__init__(*args, **kwargs)
-        entity_attr = entity_attr_list(entity_type)
-        self.fields['attribute'] = forms.ChoiceField(choices=[('','Select an Attribute')] + entity_attr)
-
-class RuleOperatorSelectForm(forms.Form):
-    def __init__(self, *args, **kwargs):
-        attr_type = kwargs.pop("attr_type")
-        super().__init__(*args, **kwargs)
-        operations = operations_list(attr_type)
-        self.fields['operators'] = forms.ChoiceField(choices=[('', 'Select an Operator')] + operations)
-
-class RuleValueSetForm(forms.Form):
-    def __init__(self, *args, **kwargs):
-        type_s = kwargs.pop("type_s")
-        super().__init__(*args, **kwargs)
-        if type_s == "float":
-            self.fields['value'] = forms.DecimalField(label="Value", max_digits=15, decimal_places=2)
-        if type_s == "str":
-            self.fields['value'] = forms.CharField(label="Value", max_length=50)
-
 class RuleExpressionEditForm(forms.Form):
-    OPS = [
-        ('lt', "Less Than"),
-        ('gt', "Greater Than"),
-        ('lte', "Less Than or Equal"),
-        ('gte', "Greater Than or Equal"),
-        # ('lt', "Less Than"),
-        # ('lt', "Less Than"),
-        # ('lt', "Less Than"),
-    ]
 
     def __init__(self, *args, **kwargs):
         instance = kwargs.pop('instance', None)
@@ -112,66 +26,41 @@ class RuleExpressionEditForm(forms.Form):
             if instance.is_value:
                 if not instance.value.is_reference:
                     if instance.value.value_type == 'float':
-                        self.fields['value_input'] = forms.FloatField(initial=instance.value.get_appropiate_value())
+                        self.fields[FORM_VALUE_INPUT] = forms.FloatField(initial=instance.value.get_appropiate_value())
                     elif instance.value.value_type == 'decimal':
-                        self.fields['value_input'] = forms.DecimalField(max_digits=15, decimal_places=2, initial=instance.value.get_appropiate_value())
+                        self.fields[FORM_VALUE_INPUT] = forms.DecimalField(max_digits=15, decimal_places=2, initial=instance.value.get_appropiate_value())
                     elif instance.value.value_type == 'str' or instance.value.value_type == 'string':
-                        self.fields['value_input'] = forms.CharField(max_length=50, initial=instance.value.get_appropiate_value())
+                        self.fields[FORM_VALUE_INPUT] = forms.CharField(max_length=50, initial=instance.value.get_appropiate_value())
                     elif instance.value.value_type == 'int':
-                        self.fields['value_input'] = forms.IntegerField()
+                        self.fields[FORM_VALUE_INPUT] = forms.IntegerField()
                     else:
-                        self.fields['value_input'] = forms.CharField(max_length=50, initial=instance.value.get_appropiate_value())
+                        self.fields[FORM_VALUE_INPUT] = forms.CharField(max_length=50, initial=instance.value.get_appropiate_value())
                 else:
                     if instance.partition.owner.id and instance.partition.id:
                         ref_ents = entities_list(instance.partition.owner.userprofile.id, instance.partition.id)
                         ref_attrs = entity_attr_list()
-                        self.fields['ref_attrs'] = forms.ChoiceField(choices=ref_attrs, required=False)
+                        self.fields[FORM_REF_ATTRS] = forms.ChoiceField(choices=ref_attrs, required=False)
                         # self.fields['ref_type'] = forms.ChoiceField(choices=self.EXPR_REF_TYPES, required=False)
-                        self.fields['ref_ents'] = forms.ChoiceField(choices=ref_ents, required=False)
+                        self.fields[FORM_REF_ENTS] = forms.ChoiceField(choices=ref_ents, required=False)
 
             else:
-                self.fields['operator'] = forms.ChoiceField(choices=[('', 'Select an Operation')] + self.OPS)
+                self.fields[FORM_OPERATOR] = forms.ChoiceField(choices=[('', 'Select an Operation')] + BIOPS_CHOICES)
 
 class RuleExpressionAddForm(forms.Form):
-    OPS = [
-        ('lt', "Less Than"),
-        ('gt', "Greater Than"),
-        ('lte', "Less Than or Equal"),
-        ('gte', "Greater Than or Equal"),
-        # ('lt', "Less Than"),
-        # ('lt', "Less Than"),
-        # ('lt', "Less Than"),
-    ]
-    UNIOP_TYPES = [
-        ('float', 'Float'),
-        ('decimal', 'Decimal'),
-        ('str', 'String'),
-        ('string', 'String'),
-        ('int', 'Integer'),
-    ]
-    EXPR_REF_TYPES = [
-        ('Partition', 'Partition'),
-        ('User', 'User'),
-    ]
-    EXPR_TYPE_CHOICES = [
-        ('value', 'Value'),
-        ('reference', 'External Reference'),
-        ('operation', 'Operation'),
-    ]
     def __init__(self, *args, **kwargs):
         user_id = kwargs.pop('user_id', None)
         partition_id = kwargs.pop('partition_id', None)
         
         super(RuleExpressionAddForm, self).__init__(*args, **kwargs)
 
-        self.fields['expr_type'] = forms.ChoiceField(choices=self.EXPR_TYPE_CHOICES, required=False)
-        self.fields['value_type'] = forms.ChoiceField(choices=self.UNIOP_TYPES, required=False)
-        self.fields['value_input'] = forms.CharField(required=False)
-        self.fields['operator'] = forms.ChoiceField(choices=self.OPS, required=False)
+        self.fields[FORM_EXPR_TYPE] = forms.ChoiceField(choices=EXPR_TYPE_CHOICES, required=False)
+        self.fields[FORM_VALUE_TYPE] = forms.ChoiceField(choices=UNIOP_VALUE_TYPE_CHOICES, required=False)
+        self.fields[FORM_VALUE_INPUT] = forms.CharField(required=False)
+        self.fields[FORM_OPERATOR] = forms.ChoiceField(choices=BIOPS_CHOICES, required=False)
         if user_id and partition_id:
             ref_ents = entities_list(user_id, partition_id)
             ref_attrs = entity_attr_list()
-            self.fields['ref_attrs'] = forms.ChoiceField(choices=ref_attrs, required=False)
+            self.fields[FORM_REF_ATTRS] = forms.ChoiceField(choices=ref_attrs, required=False)
             # self.fields['ref_type'] = forms.ChoiceField(choices=self.EXPR_REF_TYPES, required=False)
-            self.fields['ref_ents'] = forms.ChoiceField(choices=ref_ents, required=False)
+            self.fields[FORM_REF_ENTS] = forms.ChoiceField(choices=ref_ents, required=False)
 

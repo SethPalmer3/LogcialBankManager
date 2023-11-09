@@ -4,12 +4,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>New Rule Page</title>
+    <title>Rule Page</title>
 </head>
 <body class="background">
     {% if expr %}
         {% include "tree_expr.html" %} = {{ expr.evaluate }}
     {% endif %}
+    <br>
+    <a href="{% url 'partitions:partition' part_id %}" class="anchor_wrap text outline button_hover"> Back </a>
     {% if messages %}
     <ul class="messages sector right_justified">
         {% for message in messages %}

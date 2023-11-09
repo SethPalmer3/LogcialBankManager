@@ -5,6 +5,8 @@ import uuid
 from decimal import Decimal
 
 from users.models import UserProfile
+from . import partition_globals as pg
+
 
 # Create your models here.
 class Partition(models.Model):
@@ -20,32 +22,12 @@ class Partition(models.Model):
     def __str__(self):
         return f"{self.label}"
 
-class Rule(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = encrypt(models.CharField(max_length=50))
-    partition= models.ForeignKey(to=Partition, null=True, on_delete=models.SET_NULL)
-    active = models.BooleanField(default=True)
-    entity_id = encrypt(models.CharField(null=True, blank=True, max_length=50))
-    entity_type = encrypt(models.CharField(null=True, blank=True, max_length=50))
-    entity_name = encrypt(models.CharField(null=True, blank=True, max_length=50))
-    attribute = encrypt(models.CharField(null=True, blank=True, max_length=100))
-    attribute_type = encrypt(models.CharField(null=True, blank=True, max_length=50))
-    operation = encrypt(models.CharField(null=True, blank=True, max_length=10))
-    value = encrypt(models.CharField(null=True, blank=True, max_length=50))
-    action = encrypt(models.CharField(null=True, blank=True, max_length=100))
-
-    def __str__(self) -> str:
-        return f"{self.name}"
-
+UNIOP_REF_TYPE_CONVERT = {
+    'Partition': Partition,
+    'User': UserProfile,
+}
 class RuleUniopExpression(models.Model):
-    UNIOP_TYPES = [
-        ('float', 'Float'),
-        ('decimal', 'Decimal'),
-        ('str', 'String'),
-        ('string', 'String'),
-        ('int', 'Integer'),
-    ]
-    value_type = encrypt(models.CharField(choices=UNIOP_TYPES, max_length=20, null=True, blank=True))
+    value_type = encrypt(models.CharField(choices=pg.UNIOP_VALUE_TYPE_CHOICES, max_length=20, null=True, blank=True))
     float_value = encrypt(models.FloatField(null=True, blank=True))
     decimal_value = encrypt(models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True))
     string_value = encrypt(models.CharField(max_length=50, null=True, blank=True))
@@ -57,50 +39,25 @@ class RuleUniopExpression(models.Model):
 
     def __str__(self):
         return self.get_appropiate_value().__str__()
+
     def set_appropiate_value(self, value):
-        if self.value_type == 'float':
-            self.float_value = value
-        if self.value_type == 'decimal':
-            self.decimal_value = value
-        if self.value_type == 'str' or self.value_type == 'string':
-            self.string_value = value
-        if self.value_type == 'int':
-            self.int_value = value
+        setattr(self, f"{self.value_type}_value", value) # sets correctly typed value
+
     def get_appropiate_value(self):
-        UNIOP_CONVERT = {
-            'float': self.float_value,
-            'decimal': self.decimal_value,
-            'str': self.string_value,
-            'string': self.string_value,
-            'int': self.int_value
-        }
-        UNIOP_TYPE_CONVERT = {
-            'Partition': Partition,
-            'User': UserProfile,
-        }
         if self.is_reference:
             try:
-                print(getattr(UNIOP_TYPE_CONVERT[self.reference_type].objects.get(id=self.reference_id),self.reference_attr))
-                return getattr(UNIOP_TYPE_CONVERT[self.reference_type].objects.get(id=self.reference_id),self.reference_attr)
+                return getattr(UNIOP_REF_TYPE_CONVERT[self.reference_type].objects.get(id=self.reference_id),self.reference_attr)
             except UserProfile.DoesNotExist:
                 temp = int(self.reference_id)
-                return getattr(UNIOP_TYPE_CONVERT[self.reference_type].objects.get(pk=temp),self.reference_attr)
+                return getattr(UNIOP_REF_TYPE_CONVERT[self.reference_type].objects.get(pk=temp),self.reference_attr)
+        else:
+            return getattr(self, pg.UNIOP_SELF_ATTRIBUTE_CONVERT[self.value_type])
 
-        return UNIOP_CONVERT[self.value_type]
     def get_type(self):
         return self.value_type
 
 
 class RuleBiopExpression(models.Model):
-    OPS = [
-        ('lt', "Less Than"),
-        ('gt', "Greater Than"),
-        ('lte', "Less Than or Equal"),
-        ('gte', "Greater Than or Equal"),
-        # ('lt', "Less Than"),
-        # ('lt', "Less Than"),
-        # ('lt', "Less Than"),
-    ]
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     partition= models.ForeignKey(to=Partition, null=True, blank=True, on_delete=models.CASCADE)
     left_expr = models.ForeignKey(to="RuleBiopExpression", related_name="left_expression", null=True, blank=True, on_delete=models.SET_NULL)
@@ -108,7 +65,7 @@ class RuleBiopExpression(models.Model):
     is_value = models.BooleanField(default=False)
     is_root = models.BooleanField(default=False)
     value = models.ForeignKey(to=RuleUniopExpression, null=True, blank=True, on_delete=models.SET_NULL)
-    operator = encrypt(models.CharField(max_length=20, choices=OPS, null=True, blank=True))
+    operator = encrypt(models.CharField(max_length=20, choices=pg.BIOPS_CHOICES, null=True, blank=True))
     def __str__(self):
         if self.value is not None and self.is_value:
             return self.value.__str__()
@@ -124,14 +81,4 @@ class RuleBiopExpression(models.Model):
         if lv is None or rv is None:
             return None
 
-        if self.operator == "lt":
-            return lv < rv
-        elif self.operator == "gt":
-            return lv > rv
-        elif self.operator == "lte":
-            return lv <= rv
-        elif self.operator == "gte":
-            return lv >= rv
-        else:
-            return None
-
+        return pg.BIOPS_CHOICE_FUNCS[self.operator](lv, rv)
