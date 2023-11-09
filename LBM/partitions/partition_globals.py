@@ -9,6 +9,9 @@ FORM_VALUE_INPUT = 'value_input'
 FORM_VALUE_TYPE = 'value_type'
 FORM_OPERATOR = 'operator'
 FORM_EXPR_TYPE = 'expr_type'
+FORM_CHILD_LEFT = 'left'
+FORM_CHILD_RIGHT = 'right'
+FORM_CHILD_DIR = 'l_or_r'
 IS_VAL_OR_REF = 'value_or_ref'
 
 BIOPS_CHOICES = [
@@ -65,7 +68,10 @@ EXPR_ATTR_CHOICES = {
         ('User,total_amount', 'Total Amount'),
     ]
 }
-
+PARENT_EXPR_DIR_CHOICES = [
+    (FORM_CHILD_LEFT, "Put Left Hand Side"),
+    (FORM_CHILD_RIGHT, "Put Right Hand Side"),
+]
 
 def rule_entity_stringify(ent_id, ent_type, ent_name, is_current=False):
     value = f"{ent_id},{ent_type},{ent_name}"
@@ -111,3 +117,4 @@ def entity_attr_list(ent_type=None):
             ret.append(val_dis)
 
     return ret
+

@@ -14,4 +14,6 @@ urlpatterns = [
     path('rule-expr-unset-r/<uuid:expr_id>/', views.rule_expr_unset_r, name='rule_expr_unset_r'),
     path('rule-expr-set-l/<uuid:expr_id>/', views.rule_expr_set_l, name='rule_expr_set_l'),
     path('rule-expr-set-r/<uuid:expr_id>/', views.rule_expr_set_r, name='rule_expr_set_r'),
+    path('rule-expr-parent/<uuid:expr_id>/', views.rule_expr_parent, name='rule_expr_parent'),
+    path('rule-expr-create/<uuid:partition_id>/', views.rule_expr_create, name='rule_expr_create'),
 ] 
