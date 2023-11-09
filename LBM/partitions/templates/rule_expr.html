@@ -8,7 +8,7 @@
 </head>
 <body class="background">
     {% if expr %}
-        {% include "tree_expr.html" %} = {{ expr.evaluate }}
+        ({% include "tree_expr.html" %}) = {{ expr.evaluate }}
     {% endif %}
     <br>
     <a href="{% url 'partitions:partition' part_id %}" class="anchor_wrap text outline button_hover"> Back </a>

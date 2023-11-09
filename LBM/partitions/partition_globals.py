@@ -9,6 +9,7 @@ FORM_VALUE_INPUT = 'value_input'
 FORM_VALUE_TYPE = 'value_type'
 FORM_OPERATOR = 'operator'
 FORM_EXPR_TYPE = 'expr_type'
+IS_VAL_OR_REF = 'value_or_ref'
 
 BIOPS_CHOICES = [
     ('eq', "Equals"),
@@ -61,7 +62,7 @@ EXPR_ATTR_CHOICES = {
         ('Partition,current_amount', 'Current Amount'),
     ],
     REF_TYPE_USER: [
-        ('total_amount', 'Total Amount'),
+        ('User,total_amount', 'Total Amount'),
     ]
 }
 

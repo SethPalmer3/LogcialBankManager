@@ -1,21 +1,23 @@
 {% if expr.operator %}
     {% if expr.left_expr %}
+        (
         {% with expr.left_expr as expr %}
             {% include "tree_expr.html" %}
         {% endwith %}
+        )
     {% else %}
     <a href="{% url 'partitions:rule_expr_set_l' expr.id %}">{{ None }}</a>
     {% endif %}
     <a href = "{% url 'partitions:rule_expr_edit' expr.id %}">{{ expr.operator }}</a>
-    <!-- {{ expr.operator }} -->
     {% if expr.right_expr %}
+        (
         {% with expr.right_expr as expr %}
             {% include "tree_expr.html" %}
         {% endwith %}
+        )
     {% else %}
     <a href="{% url 'partitions:rule_expr_set_r' expr.id %}">{{ None }}</a>
     {% endif %}
 {% else %}
     <a href="{% url 'partitions:rule_expr_edit' expr.id %}">{{ expr }}</a>
-    <!-- {{ expr }} -->
 {% endif %}

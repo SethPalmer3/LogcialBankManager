@@ -24,24 +24,14 @@ class RuleExpressionEditForm(forms.Form):
         super(RuleExpressionEditForm, self).__init__(*args, **kwargs)
         if instance is not None:
             if instance.is_value:
-                if not instance.value.is_reference:
-                    if instance.value.value_type == 'float':
-                        self.fields[FORM_VALUE_INPUT] = forms.FloatField(initial=instance.value.get_appropiate_value())
-                    elif instance.value.value_type == 'decimal':
-                        self.fields[FORM_VALUE_INPUT] = forms.DecimalField(max_digits=15, decimal_places=2, initial=instance.value.get_appropiate_value())
-                    elif instance.value.value_type == 'str' or instance.value.value_type == 'string':
-                        self.fields[FORM_VALUE_INPUT] = forms.CharField(max_length=50, initial=instance.value.get_appropiate_value())
-                    elif instance.value.value_type == 'int':
-                        self.fields[FORM_VALUE_INPUT] = forms.IntegerField()
-                    else:
-                        self.fields[FORM_VALUE_INPUT] = forms.CharField(max_length=50, initial=instance.value.get_appropiate_value())
-                else:
+                    self.fields[IS_VAL_OR_REF] = forms.ChoiceField(label="Value or Reference", choices=[(EXPR_TYPE_VALUE, "Value"), (EXPR_TYPE_REF, "Reference")])
+                    self.fields[FORM_VALUE_TYPE] = forms.ChoiceField(choices=UNIOP_VALUE_TYPE_CHOICES, required=False)
+                    self.fields[FORM_VALUE_INPUT] = forms.CharField(max_length=50, initial=instance.value.get_appropiate_value(), required=False)
                     if instance.partition.owner.id and instance.partition.id:
                         ref_ents = entities_list(instance.partition.owner.userprofile.id, instance.partition.id)
                         ref_attrs = entity_attr_list()
-                        self.fields[FORM_REF_ATTRS] = forms.ChoiceField(choices=ref_attrs, required=False)
-                        # self.fields['ref_type'] = forms.ChoiceField(choices=self.EXPR_REF_TYPES, required=False)
-                        self.fields[FORM_REF_ENTS] = forms.ChoiceField(choices=ref_ents, required=False)
+                        self.fields[FORM_REF_ENTS] = forms.ChoiceField(label="Enities", choices=ref_ents, required=False)
+                        self.fields[FORM_REF_ATTRS] = forms.ChoiceField(label="Attributes", choices=ref_attrs, required=False)
 
             else:
                 self.fields[FORM_OPERATOR] = forms.ChoiceField(choices=[('', 'Select an Operation')] + BIOPS_CHOICES)

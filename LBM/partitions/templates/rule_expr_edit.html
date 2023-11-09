@@ -1,7 +1,7 @@
 {% load static %}
-<link rel="stylesheet" href="{% static 'partitions/partition_edit.css' %}">
 <link rel="stylesheet" href="{% static 'main_color_scheme.css' %}">
 <link rel="stylesheet" href="{% static 'regular_styles.css' %}">
+<script src="{% static 'partitions/rule_expr_edit.js' %}"></script>
 
 <!DOCTYPE html>
 <html>
@@ -11,7 +11,16 @@
 <body class="background">
     <form method="post">
       {% csrf_token %}
-      {{ form.as_p }}
+        {{ form.value_or_ref }}
+        <div id="fix_values" style="display:none;">
+        {{ form.value_type }}
+        {{ form.value_input }}
+        </div>
+        <div id="ref_values" style="display:none;">
+        {{ form.ref_ents }}
+        {{ form.ref_attrs }}
+        </div>
+        
       <input type="submit" value="Submit" class="anchor_wrap text outline button_hover button">
     </form>
     {% if not expr.is_value %}

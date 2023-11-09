@@ -27,7 +27,6 @@ document.addEventListener('DOMContentLoaded', function() {
             refAttrFields.style.display = 'block';
             operationFields.style.display = 'none';
             select_values = refSelect.value.split(',');
-            console.log(select_values[1]);
             for (let i=0; i<refAttrSelect.children.length; i++){
                 attr_type = refAttrSelect.children[i].value.split(',')[0];
                 console.log(attr_type);

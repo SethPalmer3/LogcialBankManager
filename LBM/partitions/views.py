@@ -3,7 +3,6 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from requests import delete
 
 from .models import Partition, RuleBiopExpression, RuleUniopExpression
 from .forms import NewPartiton, PartitionEditForm, RuleExpressionAddForm, RuleExpressionEditForm
@@ -97,30 +96,52 @@ def rule_expr_edit(request, expr_id):
     form = RuleExpressionEditForm(instance=expr_node, data=request.POST or None)
     if request.method == "POST":
         if form.is_valid():
-            if expr_node.is_value:
-                if expr_node.value.is_reference:
-                    (ref_id, ref_type, _) = form.cleaned_data[FORM_REF_ENTS].split(',')
-                    (ref_t, ref_attr) = form.cleaned_data[FORM_REF_ATTRS].split(',')
-                    if ref_type != ref_t:
-                        messages.error(request, "The attribute doesn't fit the entity")
-                        return render(request, 'rule_expr_edit.html', context={'form': form, 'partition_id': expr_node.partition.id, 'expr': expr_node})
-                    with transaction.atomic():
-                        # print(f"{ref_id} {ref_type} {ref_attr}")
-                        expr_node.value.reference_id = ref_id
-                        expr_node.value.reference_type = ref_type
-                        expr_node.value.reference_attr = ref_attr
-                        expr_node.value.save()
-                else:
-                    expr_node.value.set_appropiate_value(form.cleaned_data[FORM_VALUE_INPUT])
+            if form.cleaned_data[IS_VAL_OR_REF] == EXPR_TYPE_VALUE:
+                expr_node.value.is_reference = False
+                expr_node.value.value_type = form.cleaned_data[FORM_VALUE_TYPE]
+                expr_node.value.set_appropiate_value(form.cleaned_data[FORM_VALUE_INPUT])
+                expr_node.value.save()
+            elif form.cleaned_data[IS_VAL_OR_REF] == EXPR_TYPE_REF:
+                (ref_id, ref_type, _) = form.cleaned_data[FORM_REF_ENTS].split(',')
+                (ref_t, ref_attr) = form.cleaned_data[FORM_REF_ATTRS].split(',')
+                if ref_type != ref_t:
+                    messages.error(request, "The attribute doesn't fit the entity")
+                    return render(request, 'rule_expr_edit.html', context={'form': form, 'partition_id': expr_node.partition.id, 'expr': expr_node})
+                with transaction.atomic():
+                    # print(f"{ref_id} {ref_type} {ref_attr}")
+                    expr_node.value.is_reference = True
+                    expr_node.value.reference_id = ref_id
+                    expr_node.value.reference_type = ref_type
+                    expr_node.value.reference_attr = ref_attr
                     expr_node.value.save()
             else:
                 expr_node.operator = form.cleaned_data[FORM_OPERATOR]
                 expr_node.save()
+
+            # if expr_node.is_value:
+            #     if expr_node.value.is_reference:
+            #         (ref_id, ref_type, _) = form.cleaned_data[FORM_REF_ENTS].split(',')
+            #         (ref_t, ref_attr) = form.cleaned_data[FORM_REF_ATTRS].split(',')
+            #         if ref_type != ref_t:
+            #             messages.error(request, "The attribute doesn't fit the entity")
+            #             return render(request, 'rule_expr_edit.html', context={'form': form, 'partition_id': expr_node.partition.id, 'expr': expr_node})
+            #         with transaction.atomic():
+            #             # print(f"{ref_id} {ref_type} {ref_attr}")
+            #             expr_node.value.reference_id = ref_id
+            #             expr_node.value.reference_type = ref_type
+            #             expr_node.value.reference_attr = ref_attr
+            #             expr_node.value.save()
+            #     else:
+            #         expr_node.value.set_appropiate_value(form.cleaned_data[FORM_VALUE_INPUT])
+            #         expr_node.value.save()
+            # else:
+            #     expr_node.operator = form.cleaned_data[FORM_OPERATOR]
+            #     expr_node.save()
             return redirect('partitions:rule_expr_view', partition_id=expr_node.partition.id)
     return render(request, 'rule_expr_edit.html', context={'form': form, 'partition_id': expr_node.partition.id, 'expr': expr_node})
 
 @login_required(login_url="/login/")
-def rule_expr_unset_l(request, expr_id, direction="left"):
+def rule_expr_unset_l(_, expr_id, direction="left"):
     expr_node = RuleBiopExpression.objects.get(id=expr_id)
     part_id = expr_node.partition.id
     getattr(expr_node, f"{direction}_expr").delete()
@@ -163,8 +184,8 @@ def rule_expr_set_l(request, expr_id, direction="left"):
                 return redirect('partitions:rule_expr_view', partition_id=expr_node.partition.id)
             elif form.cleaned_data[FORM_EXPR_TYPE] == EXPR_TYPE_REF:
                 with transaction.atomic():
-                    (ref_id, ref_type, ref_name) = form.cleaned_data[FORM_REF_ENTS].split(',')
-                    (ref_t, ref_attr) = form.cleaned_data[FORM_REF_ATTRS].split(',')
+                    (ref_id, ref_type, _) = form.cleaned_data[FORM_REF_ENTS].split(',')
+                    (_, ref_attr) = form.cleaned_data[FORM_REF_ATTRS].split(',')
                     with transaction.atomic():
                         new_ref = RuleUniopExpression()
                         new_ref.is_reference = True;
@@ -186,7 +207,7 @@ def rule_expr_set_l(request, expr_id, direction="left"):
 def rule_expr_set_r(request, expr_id):
     return rule_expr_set_l(request, expr_id, direction="right")
 
-def rule_expr_delete(request, expr_id):
+def rule_expr_delete(_, expr_id):
     expr_node = RuleBiopExpression.objects.get(id=expr_id)
     part = expr_node.partition
     expr_node.delete()
