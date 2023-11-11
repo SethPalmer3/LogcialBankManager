@@ -11,6 +11,8 @@ GET_TRANS = 'transfer'
 
 # Create your models here.
 class UserProfile(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    # uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bank = models.OneToOneField(to="ExternalWebApp", null=True, blank=True, on_delete=models.SET_NULL)
     total_amount = encrypt(models.DecimalField(null=True, blank=True, max_digits=30, decimal_places=2))
