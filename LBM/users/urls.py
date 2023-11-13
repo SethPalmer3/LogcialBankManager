@@ -9,4 +9,5 @@ urlpatterns = [
     path('home/', views.user_home, name='home'),
     path('clear/', views.invalidate_user_token, name='clear'),
     path('refresh/', views.refresh_user_token, name='refresh'),
+    path('empty/', views.empty_user_total, name='empty'),
 ] 

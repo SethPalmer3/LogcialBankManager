@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from rest_framework.generics import get_object_or_404
 
 from .models import UserProfile
 from partitions.models import Partition
@@ -15,6 +16,11 @@ def index(request):
     Index of the site. Just redirects to login page
     '''
     return redirect(reverse('logins:login'))
+
+def empty_user_total(request):
+    request.user.userprofile.total_amount = None
+    request.user.userprofile.save()
+    return redirect(reverse('users:home'))
 
 def invalidate_user_token(request):
     request.user.userprofile.valid_token = False
@@ -36,19 +42,22 @@ def user_home(request):
         messages.success(request, "Success")
         messages.error(request, "Error")
 
-
     if request.user is None or not request.user.is_authenticated:
         return redirect(reverse('logins:login'))
     partitions = Partition.objects.filter(owner=request.user, is_unallocated=False)
-    userprof = UserProfile.objects.filter(user=request.user).first()
+    userprof = get_object_or_404(UserProfile, user=request.user)
 
     diff = check_partitions(partitions, request.user)
-    unallocated_partition = Partition.objects.filter(is_unallocated=True).first()
+    try:
+        unallocated_partition = Partition.objects.get(owner=request.user, is_unallocated=True)
+    except Partition.DoesNotExist:
+        unallocated_partition = None
 
     if diff is None or userprof.total_amount is None: # Checks if userprof has a total_amount
         if unallocated_partition is not None:
             unallocated_partition.delete()
-        partitions = Partition.objects.filter(owner=request.user)
+            unallocated_partition = None
+        partitions = Partition.objects.filter(owner=request.user, is_unallocated=False)
         return render(request, 'home.html', {'user_parts': partitions, 'user_profile': userprof, 'unalloc': unallocated_partition})
 
     if diff >= 0.0: # checking if partition total is the same or lower than user total
@@ -65,6 +74,7 @@ def user_home(request):
                 unallocated_partition.save()
             else:
                 unallocated_partition.delete()
+                unallocated_partition = None
                 messages.error(request, f"Over allocated balance by ${abs(diff)}")
         else:
             messages.error(request, f"Over allocated balance by ${abs(diff)}")
