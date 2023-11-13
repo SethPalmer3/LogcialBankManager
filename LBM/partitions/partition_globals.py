@@ -12,7 +12,16 @@ FORM_EXPR_TYPE = 'expr_type'
 FORM_CHILD_LEFT = 'left'
 FORM_CHILD_RIGHT = 'right'
 FORM_CHILD_DIR = 'l_or_r'
+FORM_EXPR_NAME = 'expr_name'
 IS_VAL_OR_REF = 'value_or_ref'
+ACTION_FREEZE = 'freeze'
+ACTION_TRANSFER = 'transfer'
+FORM_ACTION = 'action'
+
+ACTIONS_CHOICES = [
+    (ACTION_TRANSFER, "Transfer"),
+    (ACTION_FREEZE, "Freeze"),
+]
 
 BIOPS_CHOICES = [
     ('eq', "Equals"),

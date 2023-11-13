@@ -23,6 +23,8 @@ class RuleExpressionEditForm(forms.Form):
         instance = kwargs.pop('instance', None)
         super(RuleExpressionEditForm, self).__init__(*args, **kwargs)
         if instance is not None:
+            if instance.is_root:
+                self.fields[FORM_EXPR_NAME] = forms.CharField(label="Rename Rule", initial=instance.label or "", max_length=20)
             if instance.is_value:
                     self.fields[IS_VAL_OR_REF] = forms.ChoiceField(label="Value or Reference", choices=[(EXPR_TYPE_VALUE, "Value"), (EXPR_TYPE_REF, "Reference")])
                     self.fields[FORM_VALUE_TYPE] = forms.ChoiceField(choices=UNIOP_VALUE_TYPE_CHOICES, required=False)
@@ -34,7 +36,7 @@ class RuleExpressionEditForm(forms.Form):
                         self.fields[FORM_REF_ATTRS] = forms.ChoiceField(label="Attributes", choices=ref_attrs, required=False)
 
             else:
-                self.fields[FORM_OPERATOR] = forms.ChoiceField(choices=[('', 'Select an Operation')] + BIOPS_CHOICES)
+                self.fields[FORM_OPERATOR] = forms.ChoiceField(choices=[('', 'Select an Operation')] + BIOPS_CHOICES, initial=instance.operator)
 
 class RuleExpressionAddForm(forms.Form):
     def __init__(self, *args, **kwargs):
@@ -47,6 +49,7 @@ class RuleExpressionAddForm(forms.Form):
         self.fields[FORM_OPERATOR] = forms.ChoiceField(choices=BIOPS_CHOICES, required=False)
         if is_parent:
             self.fields[FORM_CHILD_DIR] = forms.ChoiceField(choices=PARENT_EXPR_DIR_CHOICES, required=False)
+            self.fields[FORM_EXPR_NAME] = forms.CharField(label="Name Rule", max_length=30, required=False)
         if not is_parent:
             self.fields[FORM_EXPR_TYPE] = forms.ChoiceField(choices=EXPR_TYPE_CHOICES, required=False)
             self.fields[FORM_VALUE_TYPE] = forms.ChoiceField(choices=UNIOP_VALUE_TYPE_CHOICES, required=False)
@@ -58,4 +61,13 @@ class RuleExpressionAddForm(forms.Form):
                 # self.fields['ref_type'] = forms.ChoiceField(choices=self.EXPR_REF_TYPES, required=False)
                 self.fields[FORM_REF_ENTS] = forms.ChoiceField(choices=ref_ents, required=False)
 
+class SetActionForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.pop('instance', None)
 
+        super(SetActionForm, self).__init__(*args, **kwargs)
+
+        if instance:
+            self.fields[FORM_ACTION] = forms.ChoiceField(choices=ACTIONS_CHOICES, initial=instance.action, required=False)
+        else:
+            self.fields[FORM_ACTION] = forms.ChoiceField(choices=ACTIONS_CHOICES, required=False)

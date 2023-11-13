@@ -36,8 +36,12 @@ class RuleUniopExpression(models.Model):
     reference_type = encrypt(models.CharField(max_length=50, null=True, blank=True))
     reference_attr = encrypt(models.CharField(max_length=50, null=True, blank=True))
 
+
     def __str__(self):
         return self.get_appropiate_value().__str__()
+
+    def reference_name(self):
+        return UNIOP_REF_TYPE_CONVERT[self.reference_type].objects.get(id=self.reference_id).__str__()
 
     def set_appropiate_value(self, value):
         setattr(self, f"{self.value_type}_value", value) # sets correctly typed value
@@ -58,6 +62,7 @@ class RuleUniopExpression(models.Model):
 
 class RuleBiopExpression(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    label = encrypt(models.CharField(max_length=20, null=True, blank=True))
     partition= models.ForeignKey(to=Partition, null=True, blank=True, on_delete=models.CASCADE)
     left_expr = models.ForeignKey(to="RuleBiopExpression", related_name="left_expression", null=True, blank=True, on_delete=models.SET_NULL)
     right_expr = models.ForeignKey(to="RuleBiopExpression", related_name="right_expression", null=True, blank=True, on_delete=models.SET_NULL)
@@ -65,6 +70,7 @@ class RuleBiopExpression(models.Model):
     is_root = models.BooleanField(default=False)
     value = models.ForeignKey(to=RuleUniopExpression, null=True, blank=True, on_delete=models.SET_NULL)
     operator = encrypt(models.CharField(max_length=20, choices=pg.BIOPS_CHOICES, null=True, blank=True))
+    action = encrypt(models.CharField(max_length=20, null=True, blank=True))
     def __str__(self):
         if self.value is not None and self.is_value:
             return self.value.__str__()
@@ -81,3 +87,14 @@ class RuleBiopExpression(models.Model):
             return None
 
         return pg.BIOPS_CHOICE_FUNCS[self.operator](lv, rv)
+    def recursive_delete(self):
+        if self.is_value:
+            self.value.delete()
+            self.delete()
+            return
+        else:
+            if self.left_expr:
+                self.left_expr.recursive_delete()
+            if self.right_expr:
+                self.right_expr.recursive_delete()
+            self.delete()

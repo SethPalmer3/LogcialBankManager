@@ -11,6 +11,9 @@
 <body class="background">
     <form method="post">
       {% csrf_token %}
+        {% if expr.is_root %}
+            {{ form.expr_name }}
+        {% endif %}
         {% if form.value_or_ref %}
             {{ form.value_or_ref }}
             <div id="fix_values" style="display:none;">
@@ -29,8 +32,12 @@
       <input type="submit" value="Submit" class="anchor_wrap text outline button_hover button">
     </form>
     {% if not expr.is_value %}
-        <a href="{% url 'partitions:rule_expr_unset_l' expr.id %}" class="anchor_wrap text outline button_hover"> Unset Left Value {{ expr.left_expr }} </a>
-        <a href="{% url 'partitions:rule_expr_unset_r' expr.id %}" class="anchor_wrap text outline button_hover"> Unset Right Value {{ expr.right_expr }} </a>
+        {% if expr.left_expr %}
+            <a href="{% url 'partitions:rule_expr_unset_l' expr.id %}" class="anchor_wrap text outline button_hover"> Unset Left Value {{ expr.left_expr }} </a>
+        {% endif %}
+        {% if expr.right_expr %}
+            <a href="{% url 'partitions:rule_expr_unset_r' expr.id %}" class="anchor_wrap text outline button_hover"> Unset Right Value {{ expr.right_expr }} </a>
+        {% endif %}
     {% endif %}
     <a href="{% url 'partitions:rule_expr_parent' expr.id %}" class="anchor_wrap text outline button_hover"> Add Parent </a>
     <a href="{% url 'partitions:rule_expr_delete' expr.id %}" class="anchor_wrap text outline button_hover"> Delete </a>

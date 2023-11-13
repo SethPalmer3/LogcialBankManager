@@ -1,18 +1,51 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'main_color_scheme.css' %}">
 <link rel="stylesheet" href="{% static 'regular_styles.css' %}">
+<link rel="stylesheet" href="{% static 'partitions/rule_expr.css' %}">
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Rule Page</title>
+    {% if expr.label %}
+    <title>{{ expr.label }}</title>
+    {% else %}
+    <title>Rule Viewer</title>
+    {% endif %}
 </head>
 <body class="background">
+    <div class='center'>
+    {% if expr.label %}
+        <h1 class="heading_text text">Rule: {{ expr.label }}</h1>
+    {% else %}
+        <h1 class="heading_text text">Rule: Unnamed</h1>
+    {% endif %}
     {% if expr %}
-        ({% include "tree_expr.html" %}) = {{ expr.evaluate }}
+        <div class="box">
+        <h2 class="subheading_text text">Rule Set</h2>
+            <div class="rule_line">
+                {% include "tree_expr.html" %} = {{ expr.evaluate }}
+            </div>
+        </div>
+        <div class="box">
+        <h2 class="subheading_text text">Action</h2>
+        <form method="post" action="{% url 'partitions:set_action' expr.id %}">
+            {% csrf_token %}
+            {{ form.action }}
+        </form>
+        </div>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                var choiceField = document.getElementById('id_action');
+                choiceField.addEventListener('change', function() {
+                    this.form.submit();
+                });
+            });
+        </script>
     {% else %}
         <a href="{% url 'partitions:rule_expr_create' part_id %}">{{ None }}</a>
     {% endif %}
+    </div>
     <br>
+    <a href="{% url 'partitions:rule_expr_delete' expr.id %}" class="anchor_wrap text outline button_hover"> Delete </a>
     <a href="{% url 'partitions:partition' part_id %}" class="anchor_wrap text outline button_hover"> Back </a>
     {% if messages %}
     <ul class="messages sector right_justified">

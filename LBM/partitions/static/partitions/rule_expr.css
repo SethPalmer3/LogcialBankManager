@@ -1,0 +1,36 @@
+.center {
+    display: flex;
+    flex-direction: column;
+    justify-items: center;
+    align-items: center;
+    font-family: var(--text-font);
+}
+
+.sep_line {
+    width: 50%;
+    border: 0;
+    border-top: 1px solid var(--text-color); 
+}
+
+.box {
+    border: 0;
+    outline: var(--text-color) solid 2px;
+    min-width: 25%;
+    display: flex;
+    flex-direction: column;
+    justify-items: center;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+}
+
+#id_action {
+    background-color: var(--background-color);
+    border-color: var(--outline-color);
+    border-width: var(--outline-width);
+    border-style: solid;
+    color: var(--text-color);
+    font-family: var(--text-font);
+    font-size: var(--text-size);
+}
+

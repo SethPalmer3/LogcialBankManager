@@ -1,7 +1,7 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'main_color_scheme.css' %}">
 <link rel="stylesheet" href="{% static 'regular_styles.css' %}">
-<script src="{% static 'partitions/rule_expr_add.js' %}"></script>
+<!-- <script src="{% static 'partitions/rule_expr_edit.js' %}"></script> -->
 
 <!DOCTYPE html>
 <html>
@@ -10,22 +10,12 @@
 </head>
 <body class="background">
     <form method="post">
-        {% csrf_token %}
-        {% if not is_create %}
-        {{ form.l_or_r }}
-        {% else %}
-        {{ form.expr_name.label }}
-        {{ form.expr_name }}
-        {% endif %}
-        {{ form.operator }}
-        <br>
+      {% csrf_token %}
+        {{ form.action }}
+        
       <input type="submit" value="Submit" class="anchor_wrap text outline button_hover button">
     </form>
-    {% if not is_create %}
     <a href="{% url 'partitions:rule_expr_view' partition_id %}" class="anchor_wrap text outline button_hover"> Cancel </a>
-    {% else %}
-    <a href="{% url 'partitions:partition' partition_id %}" class="anchor_wrap text outline button_hover"> Cancel </a>
-    {% endif %}
     {% if messages %}
     <ul class="messages sector right_justified">
         {% for message in messages %}

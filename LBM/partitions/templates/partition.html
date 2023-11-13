@@ -18,9 +18,22 @@
         {% if not partition_data.is_unallocated %}
         <a href="{% url 'partitions:remove_partition' partition_data.id %}" class="anchor_wrap text outline button_hover"> Remove Partiton </a>
         <a href="{% url 'partitions:edit_partition' partition_data.id %}" class="anchor_wrap text outline button_hover"> Edit Partiton </a>
-        <a href="{% url 'partitions:rule_expr_view' partition_data.id %}" class="anchor_wrap text outline button_hover"> Add Rule </a>
+        <a href="{% url 'partitions:rule_expr_create' partition_data.id %}" class="anchor_wrap text outline button_hover"> Add Rule </a>
         {% endif %}
         <a href="{% url 'users:home' %}" class="anchor_wrap text outline button_hover"> Back </a>
+    </div>
+    <div class="rules">
+        {% for r in root_rules %}
+            <a href="{% url 'partitions:rule_expr_view' r.id %}">
+                <div class="indiv_rules">
+                    {% if r.label %}
+                        {{ r.label }}
+                    {% else %}
+                        <p> Unamed </p>
+                    {% endif %}
+                </div>
+            </a>
+        {% endfor %}
     </div>
     {% if messages %}
     <ul class="messages sector right_justified">

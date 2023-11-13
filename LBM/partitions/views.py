@@ -1,22 +1,14 @@
 from django.db import transaction
-from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
-from .models import Partition, RuleBiopExpression, RuleUniopExpression
-from .forms import NewPartiton, PartitionEditForm, RuleExpressionAddForm, RuleExpressionEditForm
+from .models import Partition, RuleBiopExpression
+from .forms import NewPartiton, PartitionEditForm
 
 from users.helper_funcs import *
 from .partition_globals import *
 
-def has_parent(expr_node):
-    left_query_set = RuleBiopExpression.objects.filter(left_expr=expr_node)
-    right_query_set = RuleBiopExpression.objects.filter(right_expr=expr_node)
-    return left_query_set.exists() or right_query_set.exists()
-
-
-# Create your views here.
 @login_required(login_url="/login/")
 def user_partition_view(request, partition_id):
     '''
@@ -24,10 +16,11 @@ def user_partition_view(request, partition_id):
     '''
     try:
         part = Partition.objects.get(id=partition_id)
+        rules = RuleBiopExpression.objects.filter(partition=part, is_root=True)
     except:
         messages.error(request, "Could Not Find Partition")
         return redirect(reverse('users:home'))
-    return render(request, 'partition.html', {'partition_data': part})
+    return render(request, 'partition.html', {'partition_data': part, 'root_rules': rules})
 
 @login_required(login_url="/login/")
 def user_partition_edit(request, partition_id):
@@ -88,156 +81,4 @@ def remove_partiton(request, partition_id):
         messages.error(request, "Couldn\'t find partition")
 
     return redirect(reverse('users:home')) # Redirects to their new home screen
-
-@login_required(login_url="/login/")
-def rule_expr_view(request, partition_id):
-    # root_expr = RuleBiopExpression.objects.all().first()
-    part = Partition.objects.get(id=partition_id)
-    try:
-        root_expr = RuleBiopExpression.objects.get(partition=part, is_root=True)
-    except RuleBiopExpression.DoesNotExist:
-        root_expr = None
-    return render(request, 'rule_expr.html', context={'expr': root_expr, 'part_id': partition_id})
-
-@login_required(login_url="/login/")
-def rule_expr_edit(request, expr_id):
-    expr_node = RuleBiopExpression.objects.get(id=expr_id)
-    form = RuleExpressionEditForm(instance=expr_node, data=request.POST or None)
-    if request.method == "POST":
-        if form.is_valid():
-            if IS_VAL_OR_REF in form.cleaned_data:
-                if form.cleaned_data[IS_VAL_OR_REF] == EXPR_TYPE_VALUE:
-                    expr_node.value.is_reference = False
-                    expr_node.value.value_type = form.cleaned_data[FORM_VALUE_TYPE]
-                    expr_node.value.set_appropiate_value(form.cleaned_data[FORM_VALUE_INPUT])
-                    expr_node.value.save()
-                elif form.cleaned_data[IS_VAL_OR_REF] == EXPR_TYPE_REF:
-                    (ref_id, ref_type, _) = form.cleaned_data[FORM_REF_ENTS].split(',')
-                    (ref_t, ref_attr) = form.cleaned_data[FORM_REF_ATTRS].split(',')
-                    if ref_type != ref_t:
-                        messages.error(request, "The attribute doesn't fit the entity")
-                        return render(request, 'rule_expr_edit.html', context={'form': form, 'partition_id': expr_node.partition.id, 'expr': expr_node})
-                    with transaction.atomic():
-                        # print(f"{ref_id} {ref_type} {ref_attr}")
-                        expr_node.value.is_reference = True
-                        expr_node.value.reference_id = ref_id
-                        expr_node.value.reference_type = ref_type
-                        expr_node.value.reference_attr = ref_attr
-                        expr_node.value.save()
-            else:
-                expr_node.operator = form.cleaned_data[FORM_OPERATOR]
-                expr_node.save()
-            return redirect('partitions:rule_expr_view', partition_id=expr_node.partition.id)
-    return render(request, 'rule_expr_edit.html', context={'form': form, 'partition_id': expr_node.partition.id, 'expr': expr_node})
-
-@login_required(login_url="/login/")
-def rule_expr_unset_l(_, expr_id, direction="left"):
-    expr_node = RuleBiopExpression.objects.get(id=expr_id)
-    part_id = expr_node.partition.id
-    getattr(expr_node, f"{direction}_expr").delete()
-    return redirect('partitions:rule_expr_view', partition_id=part_id)
-
-@login_required(login_url="/login/")
-def rule_expr_unset_r(request, expr_id):
-    return rule_expr_unset_l(request, expr_id, direction="right")
-
-@login_required(login_url="/login/")
-def rule_expr_set_l(request, expr_id, direction="left"):
-    expr_node = RuleBiopExpression.objects.get(id=expr_id)
-    user = request.user.userprofile
-    part = expr_node.partition
-    form = RuleExpressionAddForm(user_id=user.id, partition_id=part.id, data=request.POST or None)
-    if request.method == "POST":
-        if form.is_valid():
-            if form.cleaned_data[FORM_EXPR_TYPE] == EXPR_TYPE_VALUE:
-                with transaction.atomic():
-                    new_value = RuleUniopExpression()
-                    new_value.value_type = form.cleaned_data[FORM_VALUE_TYPE]
-                    new_value.set_appropiate_value(form.cleaned_data[FORM_VALUE_INPUT])
-                    new_value.save()
-                    new_expr = RuleBiopExpression()
-                    new_expr.partition = expr_node.partition
-                    new_expr.value = new_value
-                    new_expr.is_value = True
-                    new_expr.save()
-                    setattr(expr_node, f"{direction}_expr", new_expr)
-                    expr_node.save()
-                return redirect('partitions:rule_expr_view', partition_id=expr_node.partition.id)
-            elif form.cleaned_data[FORM_EXPR_TYPE] == EXPR_TYPE_OP:
-                with transaction.atomic():
-                    new_op = RuleBiopExpression()
-                    new_op.partition = expr_node.partition
-                    new_op.operator = form.cleaned_data[FORM_OPERATOR]
-                    new_op.save()
-                    setattr(expr_node, f"{direction}_expr", new_op)
-                    expr_node.save()
-                return redirect('partitions:rule_expr_view', partition_id=expr_node.partition.id)
-            elif form.cleaned_data[FORM_EXPR_TYPE] == EXPR_TYPE_REF:
-                with transaction.atomic():
-                    (ref_id, ref_type, _) = form.cleaned_data[FORM_REF_ENTS].split(',')
-                    (_, ref_attr) = form.cleaned_data[FORM_REF_ATTRS].split(',')
-                    with transaction.atomic():
-                        new_ref = RuleUniopExpression()
-                        new_ref.is_reference = True;
-                        new_ref.reference_id = ref_id
-                        new_ref.reference_type = ref_type
-                        new_ref.reference_attr = ref_attr
-                        new_ref.save()
-                        new_biop = RuleBiopExpression()
-                        new_biop.is_value = True
-                        new_biop.partition = expr_node.partition
-                        new_biop.value = new_ref
-                        new_biop.save()
-                        setattr(expr_node, f"{direction}_expr", new_biop)
-                        expr_node.save()
-                return redirect('partitions:rule_expr_view', partition_id=expr_node.partition.id)
-    return render(request, "rule_expr_add.html", context={'form': form, 'partition_id': expr_node.partition.id})
-
-@login_required(login_url="/login/")
-def rule_expr_set_r(request, expr_id):
-    return rule_expr_set_l(request, expr_id, direction="right")
-
-@login_required(login_url="/login/")
-def rule_expr_delete(_, expr_id):
-    expr_node = RuleBiopExpression.objects.get(id=expr_id)
-    part = expr_node.partition
-    expr_node.delete()
-    return redirect('partitions:rule_expr_view', partition_id=part.id)
-
-def rule_expr_parent(request, expr_id):
-    expr_node = RuleBiopExpression.objects.get(id=expr_id)
-    part = expr_node.partition
-    form = RuleExpressionAddForm(is_parent=True, partition_id=part.id, user_id=request.user.userprofile.id, data=request.POST or None)
-    if not has_parent(expr_node):
-        if request.method == "POST":
-            if form.is_valid():
-                with transaction.atomic():
-                    parent_node = RuleBiopExpression()
-                    parent_node.operator = form.cleaned_data[FORM_OPERATOR]
-                    if expr_node.is_root:
-                        parent_node.is_root = True
-                        expr_node.is_root = False
-                    print(form.cleaned_data[FORM_CHILD_DIR])
-                    setattr(parent_node, f"{form.cleaned_data[FORM_CHILD_DIR]}_expr", expr_node)
-                    print(getattr(parent_node, f"{form.cleaned_data[FORM_CHILD_DIR]}_expr"))
-                    parent_node.save()
-                return redirect('partitions:rule_expr_view', partition_id=part.id)
-        return render(request, 'rule_expr_parent.html', context={'form': form, 'partition_id': part.id})
-    messages.error(request, "This node already has a parent")
-    return redirect('partitions:rule_expr_view', partition_id=part.id)
-
-def rule_expr_create(request, partition_id):
-    part = Partition.objects.get(id=partition_id)
-    form = RuleExpressionAddForm(is_parent=True, partition_id=partition_id, user_id=request.user.userprofile.id, data=request.POST or None)
-    if request.method == "POST":
-        if form.is_valid():
-            with transaction.atomic():
-                new_root = RuleBiopExpression()
-                new_root.partition = part
-                new_root.is_root = True
-                new_root.operator = form.cleaned_data[FORM_OPERATOR]
-                new_root.save()
-            return redirect('partitions:rule_expr_view', partition_id=part.id)
-    return render(request, 'rule_expr_parent.html', context={'form': form, 'partition_id': part.id, 'is_create': True})
-
 
