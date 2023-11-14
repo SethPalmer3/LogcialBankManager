@@ -72,6 +72,7 @@ class RuleBiopExpression(models.Model):
     value = models.ForeignKey(to=RuleUniopExpression, null=True, blank=True, on_delete=models.SET_NULL)
     operator = encrypt(models.CharField(max_length=20, choices=pg.BIOPS_CHOICES, null=True, blank=True))
     action = encrypt(models.CharField(max_length=20, null=True, blank=True))
+    objects = models.Manager()
     def __str__(self):
         if self.value is not None and self.is_value:
             return self.value.__str__()

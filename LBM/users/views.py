@@ -1,7 +1,6 @@
 from django.contrib import messages
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
-from rest_framework.generics import get_object_or_404
 
 from .models import UserProfile
 from partitions.models import Partition
@@ -11,7 +10,7 @@ from .helper_funcs import *
 TEST_MESSAGES = False
 
 # Create your views here.
-def index(request):
+def index(_):
     '''
     Index of the site. Just redirects to login page
     '''
@@ -49,7 +48,7 @@ def user_home(request):
 
     diff = check_partitions(partitions, request.user)
     try:
-        unallocated_partition = Partition.objects.get(owner=request.user, is_unallocated=True)
+        unallocated_partition: Partition = Partition.objects.get(owner=request.user, is_unallocated=True)
     except Partition.DoesNotExist:
         unallocated_partition = None
 

@@ -12,7 +12,7 @@ from logins.forms import BankSelectForm
 from .models import ExternalWebApp, UserProfile
 from partitions.models import Partition
 
-def check_partitions( partitons: QuerySet, user=None, total_amount = 0.0):
+def check_partitions( partitons: QuerySet, user=None, total_amount = 0.0) -> float|None:
     """
     checks if the query set of partitons amounts are allowed. if user is non 
 
