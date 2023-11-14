@@ -1,3 +1,5 @@
+from django.apps import apps
+
 EXPR_TYPE_VALUE = 'value'
 EXPR_TYPE_REF = 'reference'
 EXPR_TYPE_OP = 'operation'
@@ -63,6 +65,10 @@ EXPR_REF_TYPE_CHOICES = [
     ('Partition', 'Partition'),
     ('User', 'User'),
 ]
+EXPR_REF_TYPE_APP_CONVERT = {
+    REF_TYPE_USER: 'users',
+    REF_TYPE_PART: 'partitions',
+}
 EXPR_TYPE_CHOICES = [
     ('value', 'Value'),
     ('reference', 'External Reference'),
@@ -91,8 +97,8 @@ def rule_entity_stringify(ent_id, ent_type, ent_name, is_current=False):
 
     return (value,disp)
 
-def rule_entity_destringify(string):
-    (value,_) = string
+def rule_entity_destringify(s):
+    (value,_) = s
     (ent_id, ent_type, ent_name) = value.split(',')
     return (ent_id, ent_type, ent_name)
 
@@ -104,8 +110,8 @@ def entities_list(user_id, partition_id):
     userprof = UserProfile.objects.get(id=user_id)
     user = userprof.user
     for p in Partition.objects.filter(owner=user): # Get all partitons
-        ret.append(rule_entity_stringify(p.id, "Partition", p.label, p.id==partition_id))
-    ret.append(rule_entity_stringify(userprof.pk, "User", user.username))
+        ret.append(rule_entity_stringify(p.id,REF_TYPE_PART, p.label, p.id==partition_id))
+    ret.append(rule_entity_stringify(userprof.pk, REF_TYPE_USER, user.username))
     return ret
 
 def operations_list(type_s):
@@ -126,4 +132,11 @@ def entity_attr_list(ent_type=None):
             ret.append(val_dis)
 
     return ret
+
+def get_type_string(obj_id, obj_type):
+    app_conv = EXPR_REF_TYPE_APP_CONVERT[obj_type]
+    if obj_type == REF_TYPE_USER:
+        obj_type = "UserProfile"
+    select_model = apps.get_model(app_conv, obj_type)
+    return select_model.objects.get(id=obj_id)
 

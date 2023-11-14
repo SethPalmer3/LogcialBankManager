@@ -3,6 +3,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django_cryptography.fields import encrypt
 
+from partitions.partition_globals import REF_TYPE_USER
+
 #TODO: make description css box bigger
 
 GET_CREDS = 'get_credentials'
@@ -27,6 +29,8 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+    def select_string(self):
+        return f"{self.id},{REF_TYPE_USER},{self.user.username}"
 
 class ExternalWebApp(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

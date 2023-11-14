@@ -20,6 +20,8 @@ class Partition(models.Model):
     objects = models.Manager()
     def __str__(self):
         return f"{self.label}"
+    def select_string(self):
+        return f"{self.id},{pg.REF_TYPE_PART},{self.label}"
 
 UNIOP_REF_TYPE_CONVERT = {
     'Partition': Partition,
@@ -35,7 +37,6 @@ class RuleUniopExpression(models.Model):
     reference_id = encrypt(models.CharField(max_length=30, null=True, blank=True))
     reference_type = encrypt(models.CharField(max_length=50, null=True, blank=True))
     reference_attr = encrypt(models.CharField(max_length=50, null=True, blank=True))
-
 
     def __str__(self):
         return self.get_appropiate_value().__str__()
@@ -98,3 +99,18 @@ class RuleBiopExpression(models.Model):
             if self.right_expr:
                 self.right_expr.recursive_delete()
             self.delete()
+    def get_root(self):
+        if self.is_root:
+            return self
+        try:
+            parent_expr_left = RuleBiopExpression.objects.get(left_expr=self)
+            return parent_expr_left.get_root()
+        except RuleBiopExpression.DoesNotExist:
+            parent_expr_left = None
+        try:
+            parent_expr_right = RuleBiopExpression.objects.get(right_expr=self)
+            return parent_expr_right.get_root()
+        except RuleBiopExpression.DoesNotExist:
+            parent_expr_right = None
+        return None
+

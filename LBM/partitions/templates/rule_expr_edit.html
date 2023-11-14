@@ -41,7 +41,7 @@
     {% endif %}
     <a href="{% url 'partitions:rule_expr_parent' expr.id %}" class="anchor_wrap text outline button_hover"> Add Parent </a>
     <a href="{% url 'partitions:rule_expr_delete' expr.id %}" class="anchor_wrap text outline button_hover"> Delete </a>
-    <a href="{% url 'partitions:rule_expr_view' partition_id %}" class="anchor_wrap text outline button_hover"> Cancel </a>
+    <a href="{% url 'partitions:rule_expr_view' expr.get_root.id %}" class="anchor_wrap text outline button_hover"> Cancel </a>
     {% if messages %}
     <ul class="messages sector right_justified">
         {% for message in messages %}

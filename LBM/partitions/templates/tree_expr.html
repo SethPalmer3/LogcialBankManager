@@ -14,8 +14,8 @@
     {% else %}
     <a href="{% url 'partitions:rule_expr_set_r' expr.id %}" class="text">{{ None }}</a>
     {% endif %}
-    {% elif expr.is_reference %}
-    <a href="{% url 'partitions:rule_expr_edit' expr.id %}" class="text">{{ expr.reference_name }}({{ expr }})</a>
+    {% elif expr.value.is_reference %}
+    <a href="{% url 'partitions:rule_expr_edit' expr.id %}" class="text">{{ expr }}*</a>
     {% else %}
     <a href="{% url 'partitions:rule_expr_edit' expr.id %}" class="text">{{ expr }}</a>
 {% endif %}

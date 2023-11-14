@@ -32,7 +32,11 @@ def rule_expr_edit(request, expr_id):
 
     if request.method == "POST" and form.is_valid():
         _process_rule_expr_edit_form(expr_node, form)
-        return redirect('partitions:rule_expr_view', partition_id=expr_node.partition.id)
+        root_node = expr_node.get_root()
+        if root_node:
+            return redirect('partitions:rule_expr_view', expr_id=root_node.id)
+        messages.error(request, "Could not find root node")
+        return redirect('partitions:partition', partition_id=expr_node.partition)
 
     return render(request, 'rule_expr_edit.html', {'form': form, 'partition_id': expr_node.partition.id, 'expr': expr_node})
 
@@ -107,7 +111,11 @@ def rule_expr_set_l(request, expr_id):
 
     if request.method == "POST" and form.is_valid():
         _process_rule_expr_set_form(expr_node, form, "left")
-        return redirect('partitions:rule_expr_view', partition_id=expr_node.partition.id)
+        root_node = expr_node.get_root()
+        if root_node:
+            return redirect('partitions:rule_expr_view', expr_id=root_node.id)
+        messages.error(request, "Could not find root node")
+        return redirect('partitions:partition', partition_id=expr_node.partition)
 
     return render(request, "rule_expr_add.html", {'form': form, 'partition_id': expr_node.partition.id})
 
@@ -118,7 +126,11 @@ def rule_expr_set_r(request, expr_id):
 
     if request.method == "POST" and form.is_valid():
         _process_rule_expr_set_form(expr_node, form, "right")
-        return redirect('partitions:rule_expr_view', partition_id=expr_node.partition.id)
+        root_node = expr_node.get_root()
+        if root_node:
+            return redirect('partitions:rule_expr_view', expr_id=root_node.id)
+        messages.error(request, "Could not find root node")
+        return redirect('partitions:partition', partition_id=expr_node.partition)
 
     return render(request, "rule_expr_add.html", {'form': form, 'partition_id': expr_node.partition.id})
 
