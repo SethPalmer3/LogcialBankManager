@@ -126,3 +126,11 @@
 .subheading_text {
     font-family: "Orbitron";
 }
+
+@media screen and (max-width: 1000px){
+    .anchor_wrap{
+        font-size: 20px;
+        line-height: 1;
+        align-items: center;
+    }
+}

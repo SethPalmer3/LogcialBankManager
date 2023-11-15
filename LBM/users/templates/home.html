@@ -17,7 +17,7 @@
     <!-- <br> -->
     <div class="partition_container">
         {% if unalloc and unalloc.id %}
-        <a href="{% url 'partitions:partition' unalloc.id %}">
+        <a href="{% url 'partitions:partition' unalloc.id %}" class="unalloct_link">
             <div class="unallocated outline text button_hover">
                 <p class="partition_label"> {{ unalloc.label }} - ${{ unalloc.current_amount }} </p>
             </div>

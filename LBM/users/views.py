@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
+from django.db.models.functions import Lower
 
 from .models import UserProfile
 from partitions.models import Partition
@@ -44,6 +45,9 @@ def user_home(request):
     if request.user is None or not request.user.is_authenticated:
         return redirect(reverse('logins:login'))
     partitions = Partition.objects.filter(owner=request.user, is_unallocated=False)
+    for p in partitions:
+        print(p.label.lower())
+    sorted_partitions = sorted([obj for obj in partitions], key=lambda x: x.label.lower())
     userprof = get_object_or_404(UserProfile, user=request.user)
 
     diff = check_partitions(partitions, request.user)
@@ -77,5 +81,5 @@ def user_home(request):
                 messages.error(request, f"Over allocated balance by ${abs(diff)}")
         else:
             messages.error(request, f"Over allocated balance by ${abs(diff)}")
-    return render(request, 'home.html', {'user_parts': partitions, 'user_profile': userprof, 'unalloc': unallocated_partition})
+    return render(request, 'home.html', {'user_parts': sorted_partitions, 'user_profile': userprof, 'unalloc': unallocated_partition})
 
