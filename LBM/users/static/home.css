@@ -14,7 +14,9 @@ h2{
     display: inline-block;
     text-decoration: none;
     vertical-align: top;
-    margin-top: 10px;
+    margin-top: 20px;
+    width: 60vw;
+    height: 7vw;
 }
 
 .partition_wrap {
@@ -123,10 +125,7 @@ h2{
     .partition_wrap_link{
         width: 60vw;
         margin-left: 20px;
-    }
-    .partition_wrap{
-        width: 60vw;
-        height: 126px;
+        margin-bottom: 10px;
     }
     .unalloct_link{
         width: 25vw;
@@ -146,6 +145,7 @@ h2{
     }
     .home_page_buttons{
         width: 25vw;
+        height: 10vw;
     }
     .anchor_wrap {
         font-size: 20px;
