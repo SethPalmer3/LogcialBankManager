@@ -98,7 +98,7 @@ def rule_expr_unset_l(_, expr_id, direction="left"):
     expr_node = RuleBiopExpression.objects.get(id=expr_id)
     part_id = expr_node.partition.id
     getattr(expr_node, f"{direction}_expr").delete()
-    return redirect('partitions:rule_expr_view', partition_id=part_id)
+    return redirect('partitions:rule_expr_view', expr_id=expr_node.get_root())
 
 @login_required(login_url="/login/")
 def rule_expr_unset_r(request, expr_id):
@@ -222,10 +222,10 @@ def rule_expr_parent(request, expr_id):
                     setattr(parent_node, f"{form.cleaned_data[FORM_CHILD_DIR]}_expr", expr_node)
                     print(getattr(parent_node, f"{form.cleaned_data[FORM_CHILD_DIR]}_expr"))
                     parent_node.save()
-                return redirect('partitions:rule_expr_view', partition_id=part.id)
+                return redirect('partitions:rule_expr_view', expr_id=expr_node.get_root().id)
         return render(request, 'rule_expr_parent.html', context={'form': form, 'partition_id': part.id})
     messages.error(request, "This node already has a parent")
-    return redirect('partitions:rule_expr_view', partition_id=part.id)
+    return redirect('partitions:rule_expr_view', expr_id=expr_node.get_root().id)
 
 def rule_expr_create(request, partition_id):
     part = Partition.objects.get(id=partition_id)
@@ -245,12 +245,12 @@ def rule_expr_create(request, partition_id):
 def rule_expr_set_action(request, expr_id):
     expr_node = RuleBiopExpression.objects.get(id=expr_id)
     if not expr_node.is_root:
-        return redirect('partitions:rule_expr_view', partition_id=expr_node.partition.id)
+        return redirect('partitions:rule_expr_view', expr_id=expr_node.get_root().id)
     form = SetActionForm(instance=expr_node, data=request.POST or None)
     if request.method == "POST":
         print(form.is_valid())
         if form.is_valid():
             expr_node.action = form.cleaned_data[FORM_ACTION]
             expr_node.save()
-            return redirect('partitions:rule_expr_view', partition_id=expr_node.partition.id)
+            return redirect('partitions:rule_expr_view', expr_id=expr_node.get_root().id)
     return render(request, 'rule_set_action.html', context={'form': form, 'partition_id': expr_node.partition.id})

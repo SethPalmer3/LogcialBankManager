@@ -47,3 +47,31 @@ h1 {
     margin-left: 20px;
     margin-top: 10px;
 }
+
+.rules{
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.indiv_rules_link {
+    display: block;
+    margin: 10px 10px;
+    width: 10vw;
+    text-decoration: none;
+}
+
+.indiv_rules {
+    display: flex;
+    border: var(--outline-width) solid var(--outline-color);
+    padding: 10px;
+    justify-content: center;
+    /* justify-items: center; */
+    flex-direction: column;
+    gap: 15px;
+    font-size: 20px;
+    line-height:1;
+}
+
+.indiv_rules p {
+    margin: 0px;
+}

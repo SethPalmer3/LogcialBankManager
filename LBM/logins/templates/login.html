@@ -21,7 +21,7 @@
     <a href="{% url 'logins:signup' %}" class="anchor_wrap text outline button_hover signup"> Sign Up </a>
     <br>
     {% if messages %}
-    <ul class="messages outline sector">
+    <ul class="messages outline sector right_justified">
         {% for message in messages %}
         <li{% if message.tags %} class="{{ message.tags }} text inner_sector"{% endif %}>{{ message }}</li>
         {% endfor %}

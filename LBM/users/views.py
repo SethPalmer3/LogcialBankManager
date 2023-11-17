@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth import logout
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models.functions import Lower
@@ -48,7 +49,11 @@ def user_home(request):
     for p in partitions:
         print(p.label.lower())
     sorted_partitions = sorted([obj for obj in partitions], key=lambda x: x.label.lower())
-    userprof = get_object_or_404(UserProfile, user=request.user)
+    try:
+        userprof = UserProfile.objects.get(user=request.user)
+    except UserProfile.DoesNotExist:
+        logout(request)
+        return redirect(reverse('users:home'))
 
     diff = check_partitions(partitions, request.user)
     try:

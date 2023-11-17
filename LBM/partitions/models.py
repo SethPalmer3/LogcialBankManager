@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.contrib.auth.models import User
 from django.db import models
 from django_cryptography.fields import encrypt
@@ -14,8 +15,8 @@ class Partition(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     label = encrypt(models.CharField(max_length=200))
     # TODO: set init_amount on creation
-    init_amount = encrypt(models.DecimalField(max_digits=20,decimal_places=2, default=0.0))
-    current_amount = encrypt(models.DecimalField(max_digits=20,decimal_places=2, default=0.0))
+    init_amount = encrypt(models.DecimalField(max_digits=20,decimal_places=2, default=Decimal(0.0)))
+    current_amount = encrypt(models.DecimalField(max_digits=20,decimal_places=2, default=Decimal(0.0)))
     description = encrypt(models.CharField(default="", max_length=1000, blank=True))
     objects = models.Manager()
     def __str__(self):
@@ -90,7 +91,7 @@ class RuleBiopExpression(models.Model):
 
         return pg.BIOPS_CHOICE_FUNCS[self.operator](lv, rv)
     def recursive_delete(self):
-        if self.is_value:
+        if self.is_value and self.value:
             self.value.delete()
             self.delete()
             return
@@ -100,7 +101,7 @@ class RuleBiopExpression(models.Model):
             if self.right_expr:
                 self.right_expr.recursive_delete()
             self.delete()
-    def get_root(self):
+    def get_root(self) -> 'RuleBiopExpression | None':
         if self.is_root:
             return self
         try:

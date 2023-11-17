@@ -3,8 +3,13 @@
     background-color: var(--back-color);
 }
 
+.button_hover{
+    transition: background-color, transform 0.1s;
+}
+
 .button_hover:hover {
     background-color: var(--button-hover-color);
+    transform: scale(1.05);
 }
 
 .outline {
@@ -44,7 +49,7 @@
 
     padding: 1vh;
 
-    transition: background-color, scale 0.3s;
+    transition: background-color, transform 0.1s;
     cursor: pointer;
     height: 5vh;
 
@@ -60,8 +65,8 @@
 }
 
 .button_like {
-    outline-width: 2px;
-    outline-style: solid;
+    /* outline-width: 2px; */
+    /* outline-style: solid; */
     transition: background-color, scale 0.3s;
     cursor: pointer;
 }

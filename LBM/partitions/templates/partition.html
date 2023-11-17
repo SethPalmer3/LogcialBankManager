@@ -24,13 +24,14 @@
     </div>
     <div class="rules">
         {% for r in root_rules %}
-            <a href="{% url 'partitions:rule_expr_view' r.id %}">
-                <div class="indiv_rules">
+            <a class="indiv_rules_link" href="{% url 'partitions:rule_expr_view' r.id %}">
+                <div class="indiv_rules button_hover">
                     {% if r.label %}
-                        {{ r.label }}
+                        <p class="text">{{ r.label }}</p>
                     {% else %}
-                        <p> Unamed </p>
+                        <p class="text"> Unamed </p>
                     {% endif %}
+                    <p class="current_action text"> {{ r.action }} </p>
                 </div>
             </a>
         {% endfor %}
