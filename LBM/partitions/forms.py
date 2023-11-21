@@ -6,10 +6,22 @@ from .partition_globals import *
 from .models import Partition, RuleBiopExpression
 
 
-class PartitionEditForm(forms.ModelForm):
-    class Meta:
-        model = Partition
-        fields = ['label', 'current_amount', 'description']
+class PartitionEditForm(forms.Form):
+    LABEL = 'label'
+    CURRENT_AMOUNT = 'current_amount'
+    DESCRIPTION = 'description'
+
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.pop('instance', None)
+        super(PartitionEditForm, self).__init__(*args, **kwargs)
+        self.fields[self.LABEL] = forms.CharField(max_length=200)
+        self.fields[self.CURRENT_AMOUNT] = forms.DecimalField(max_digits=20, decimal_places=2)
+        self.fields[self.DESCRIPTION] = forms.CharField(max_length=1000)
+        if instance:
+            self.fields[self.LABEL].initial = getattr(instance, self.LABEL)
+            self.fields[self.CURRENT_AMOUNT].initial = getattr(instance, self.CURRENT_AMOUNT)
+            self.fields[self.DESCRIPTION].initial = getattr(instance, self.DESCRIPTION)
+
 
 class NewPartiton(forms.ModelForm):
     label = forms.CharField(label="Partiton Label", max_length=200)
@@ -74,7 +86,7 @@ class RuleExpressionAddForm(forms.Form):
                 self.fields[FORM_REF_ENTS] = forms.ChoiceField(choices=ref_ents, required=False)
 
 def get_transfer_options(part_owner: User) -> list[tuple[str, str]]:
-    partitions = Partition.objects.filter(owner=part_owner)
+    partitions = Partition.objects.filter(owner=part_owner, is_unallocated=False)
     ret: list[tuple[str, str]] = [('', 'Select a Partiton')]
     for p in partitions:
         ret.append((p.select_string(), p.label))

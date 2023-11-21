@@ -31,11 +31,14 @@ def user_partition_edit(request, partition_id):
     except Partition.DoesNotExist:
         messages.error(request, "Could Not Find partition")
         return redirect(reverse('users:home'))
-
+    form = PartitionEditForm(data=request.POST or None, instance=part)
     if request.method == "POST":
-        form = PartitionEditForm(request.POST, instance=part)
         if form.is_valid():
-            form.save()
+            change_fields = []
+            change_fields += set_changed_field(part, form.LABEL, form.cleaned_data[form.LABEL])
+            change_fields += set_changed_field(part, form.CURRENT_AMOUNT, form.cleaned_data[form.CURRENT_AMOUNT])
+            change_fields += set_changed_field(part, form.DESCRIPTION, form.cleaned_data[form.DESCRIPTION])
+            part.save(update_fields=change_fields)
             messages.success(request, "Successfully changed partiton")
             return redirect('partitions:partition', partition_id=partition_id)
         else:

@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import TypeVar
+from typing import Any, TypeVar
 from uuid import UUID
 from django.apps import apps
 
@@ -160,3 +160,18 @@ def execute_or_default(f: Callable[..., O], d: D, *args, **kwargs) -> O | D:
         return f(*args, **kwargs)
     except:
         return d
+
+def set_changed_field(obj: object, field: str, value: Any) -> list[str]:
+    """
+    Set attribute of object if value is different.
+    Returns:
+        Whether the attribute is the same value as given value
+    """
+    try:
+        old_value = getattr(obj, field)
+        if old_value == value:
+            return []
+        setattr(obj, field, value)
+        return [field]
+    except AttributeError:
+        return []

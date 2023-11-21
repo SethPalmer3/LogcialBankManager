@@ -1,3 +1,4 @@
+from typing import Any
 from django.db import transaction
 from django.contrib import messages
 from django.http.request import HttpRequest
@@ -241,6 +242,7 @@ def rule_expr_create(request, partition_id):
             return redirect('partitions:rule_expr_view', expr_id=new_root.id)
     return render(request, 'rule_expr_parent.html', context={'form': form, 'partition_id': part.id, 'is_create': True})
 
+
 def rule_expr_set_action(request, expr_id):
     expr_node = RuleBiopExpression.objects.get(id=expr_id)
     if not expr_node.is_root:
@@ -248,18 +250,21 @@ def rule_expr_set_action(request, expr_id):
     form = SetActionForm(instance=expr_node, user=request.user, data=request.POST or None)
     if request.method == "POST":
         if form.is_valid():
-            expr_node.action = form.cleaned_data[FORM_ACTION]
+            changed_fields: list[str] = []
+            changed_fields += set_changed_field(expr_node, "action", form.cleaned_data[FORM_ACTION])
+
             if expr_node.action == ACTION_TRANSFER:
                 (to_id, _, _) = rule_entity_destringify(form.cleaned_data[ACTION_TRANSFER_TO])
-                if expr_node.partition:
-                    expr_node.partition.frozen = False
+                set_changed_field(expr_node.partition, "frozen", False)
+                expr_node.save()
                 if to_id != "":
                     to_partition = Partition.objects.get(id=to_id) or None
                 else:
                     to_partition = None
-                expr_node.transfer_amount = form.cleaned_data[ACTION_TRANSFER_AMOUNT]
-                expr_node.transfer_to = to_partition
-            expr_node.preformed_action = False
-            expr_node.save()
+                changed_fields += set_changed_field(expr_node, "transfer_amount", form.cleaned_data[ACTION_TRANSFER_AMOUNT])
+                changed_fields += set_changed_field(expr_node, "transfer_to", to_partition)
+            changed_fields += set_changed_field(expr_node, "preformed_action", False)
+            # print(changed_fields)
+            expr_node.save(update_fields=changed_fields)
             return redirect('partitions:rule_expr_view', expr_id=expr_node.get_root().id)
     return render(request, 'rule_set_action.html', context={'form': form, 'partition_id': expr_node.partition.id})

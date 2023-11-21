@@ -47,8 +47,6 @@ def user_home(request):
     if request.user is None or not request.user.is_authenticated:
         return redirect(reverse('logins:login'))
     partitions = Partition.objects.filter(owner=request.user, is_unallocated=False)
-    for p in partitions:
-        print(p.label.lower())
     sorted_partitions = sorted([obj for obj in partitions], key=lambda x: x.label.lower())
     try:
         userprof = UserProfile.objects.get(user=request.user)

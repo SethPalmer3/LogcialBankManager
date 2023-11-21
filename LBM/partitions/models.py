@@ -31,13 +31,13 @@ class Partition(models.Model):
         Make transfer if both partitions are able to. Return if transfer was successful
         """
         if amount < Decimal(0.0) or self.frozen or other.frozen:
+            print("Error transfering")
             return False
         elif self.current_amount >= amount:
             self.current_amount -= amount
             other.current_amount += amount
-            if not _signal_triggered:
-                self.save()
-                other.save()
+            self.save()
+            other.save()
             return True
         return False
 
@@ -46,6 +46,7 @@ UNIOP_REF_TYPE_CONVERT = {
     'User': UserProfile,
 }
 class RuleUniopExpression(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     value_type = encrypt(models.CharField(choices=pg.UNIOP_VALUE_TYPE_CHOICES, max_length=20, null=True, blank=True))
     float_value = encrypt(models.FloatField(null=True, blank=True))
     decimal_value = encrypt(models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True))
@@ -96,8 +97,8 @@ class RuleBiopExpression(models.Model):
     objects = models.Manager()
     def __str__(self):
         if self.value is not None and self.is_value:
-            return self.value.__str__()
-        return f"({self.left_expr.__str__()} {self.operator} {self.right_expr.__str__()}) = {self.evaluate()}"
+            return f"{self.value.__str__()}"
+        return f"{self.label}: ({self.left_expr.__str__()} {self.operator} {self.right_expr.__str__()}) = {self.evaluate()}"
     def evaluate(self):
         if self.value is not None:
             return self.value.get_appropiate_value()
@@ -142,6 +143,7 @@ class RuleBiopExpression(models.Model):
         if not self.is_root:
             return
         if self.preformed_action or not self.evaluate():
+            print(f"didn't preform action for {self.label}")
             return
 
         if self.action == pg.ACTION_TRANSFER and \
@@ -152,27 +154,40 @@ class RuleBiopExpression(models.Model):
         elif self.action == pg.ACTION_FREEZE and \
             self.partition:
             self.partition.frozen = True
-            if not _signal_triggered:
-                self.partition.save()
+            self.partition.save()
         self.preformed_action = True
-        if not _signal_triggered:
-            self.save()
+        # if not _signal_triggered:
+        self.save()
+        self.partition.save()
 
 def update_rules():
     rules = RuleBiopExpression.objects.filter(is_root=True)
-    print("Did a signal")
     for r in rules:
         with transaction.atomic():
             r.preform_action(_signal_triggered=True)
+            r.save()
+            if r.partition:
+                r.partition.save()
 
 @receiver(post_save, sender=Partition)
 def partiton_check(sender, instance, created, **kwargs):
-    update_rules()
+    if kwargs.get('update_fields') and "current_amount" in kwargs.get('update_fields'):
+        update_rules()
 
 @receiver(post_save, sender=RuleBiopExpression)
-def rule_check(sender, instance, created, **kwargs):
-    update_rules()
+def rule_check(sender, instance: RuleBiopExpression, created, **kwargs):
+    updated_fields = kwargs.get('update_fields')
+    if updated_fields is not None:
+        target_value = False
+        for a in ['operator', 'action', 'transfer_to', 'transfer_amount']:
+            target_value |= (a in kwargs.get('update_fields'))
+        if target_value:
+            print("Passed rule check")
+            update_rules()
+            instance.preformed_action = False
+            instance.save()
 
 @receiver(post_save, sender=RuleUniopExpression)
-def rule_check(sender, instance, created, **kwargs):
-    update_rules()
+def rule_uniop_check(sender, instance, created, **kwargs):
+    if not kwargs.get('updated_fields'):
+        update_rules()
