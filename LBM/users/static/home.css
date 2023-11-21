@@ -32,12 +32,12 @@ h2{
     height: inherit;
     padding: 5px;
     vertical-align: 10vhtop;
-    transition: background-color, scale 0.3s;
+    transition: background-color, transform 0.3s;
     /* margin-left: 10px; */
 }
 
 .partition_wrap:hover {
-  scale: 105%;
+    transform: scale(1.02);
 }
 
 .partition_wrap:active{

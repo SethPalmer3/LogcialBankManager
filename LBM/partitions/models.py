@@ -1,7 +1,9 @@
 from decimal import Decimal
 from django.contrib.auth.models import User
-from django.db import models
+from django.db import models, transaction
 from django_cryptography.fields import encrypt
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 import uuid
 
 from users.models import UserProfile
@@ -24,7 +26,7 @@ class Partition(models.Model):
         return f"{self.label}"
     def select_string(self):
         return f"{self.id},{pg.REF_TYPE_PART},{self.label}"
-    def transfer(self, other: "Partition", amount: Decimal) -> bool:
+    def transfer(self, other: "Partition", amount: Decimal, _signal_triggered=False) -> bool:
         """
         Make transfer if both partitions are able to. Return if transfer was successful
         """
@@ -33,8 +35,9 @@ class Partition(models.Model):
         elif self.current_amount >= amount:
             self.current_amount -= amount
             other.current_amount += amount
-            self.save()
-            other.save()
+            if not _signal_triggered:
+                self.save()
+                other.save()
             return True
         return False
 
@@ -132,7 +135,7 @@ class RuleBiopExpression(models.Model):
         except RuleBiopExpression.DoesNotExist:
             parent_expr_right = None
         return None
-    def preform_action(self):
+    def preform_action(self, _signal_triggered=False):
         """
         Preform set action if applicable
         """
@@ -144,10 +147,32 @@ class RuleBiopExpression(models.Model):
         if self.action == pg.ACTION_TRANSFER and \
             self.transfer_to and self.partition and \
             self.transfer_amount > Decimal(0.00):
-                self.partition.transfer(self.transfer_to, self.transfer_amount)
+                self.partition.frozen = False
+                self.partition.transfer(self.transfer_to, self.transfer_amount, _signal_triggered=_signal_triggered)
         elif self.action == pg.ACTION_FREEZE and \
             self.partition:
-            self.partition.frozen
-            self.partition.save()
+            self.partition.frozen = True
+            if not _signal_triggered:
+                self.partition.save()
         self.preformed_action = True
-        self.save()
+        if not _signal_triggered:
+            self.save()
+
+def update_rules():
+    rules = RuleBiopExpression.objects.filter(is_root=True)
+    print("Did a signal")
+    for r in rules:
+        with transaction.atomic():
+            r.preform_action(_signal_triggered=True)
+
+@receiver(post_save, sender=Partition)
+def partiton_check(sender, instance, created, **kwargs):
+    update_rules()
+
+@receiver(post_save, sender=RuleBiopExpression)
+def rule_check(sender, instance, created, **kwargs):
+    update_rules()
+
+@receiver(post_save, sender=RuleUniopExpression)
+def rule_check(sender, instance, created, **kwargs):
+    update_rules()

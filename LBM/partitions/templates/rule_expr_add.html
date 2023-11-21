@@ -13,20 +13,20 @@
         {% csrf_token %}
         {{ form.expr_type }}
         <div id="value-fields" style="display:none;">
-        {{ form.value_type }}
-        {{ form.value_input }}
+            {{ form.value_type }}
+            {{ form.value_input }}
         </div>
         <div id="ref-fields" style="display:none;">
-        {{ form.ref_types }}
-        {{ form.ref_ents }}
+            {{ form.ref_types }}
+            {{ form.ref_ents }}
             <div id="ref-attr-fields" style="display:none;">
                 {{ form.ref_attrs }}
             </div>
         </div>
         <div id="operation-fields" style="display:none;">
-        {{ form.operator }}
+            {{ form.operator }}
         </div>
-      <input type="submit" value="Submit" class="anchor_wrap text outline button_hover button">
+        <input type="submit" value="Submit" class="anchor_wrap text outline button_hover button">
     </form>
     <a href="{% url 'partitions:rule_expr_view' partition_id %}" class="anchor_wrap text outline button_hover"> Cancel </a>
     {% if messages %}

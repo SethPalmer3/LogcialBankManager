@@ -37,7 +37,6 @@ def rule_expr_edit(request, expr_id):
             return redirect('partitions:rule_expr_view', expr_id=root_node.id)
         messages.error(request, "Could not find root node")
         return redirect('partitions:partition', partition_id=expr_node.partition)
-
     return render(request, 'rule_expr_edit.html', {'form': form, 'partition_id': expr_node.partition.id, 'expr': expr_node})
 
 def _process_rule_expr_edit_form(expr_node, form):
@@ -252,6 +251,8 @@ def rule_expr_set_action(request, expr_id):
             expr_node.action = form.cleaned_data[FORM_ACTION]
             if expr_node.action == ACTION_TRANSFER:
                 (to_id, _, _) = rule_entity_destringify(form.cleaned_data[ACTION_TRANSFER_TO])
+                if expr_node.partition:
+                    expr_node.partition.frozen = False
                 if to_id != "":
                     to_partition = Partition.objects.get(id=to_id) or None
                 else:

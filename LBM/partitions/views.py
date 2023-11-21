@@ -80,4 +80,3 @@ def remove_partiton(request, partition_id):
         messages.error(request, "Couldn\'t find partition")
 
     return redirect(reverse('users:home')) # Redirects to their new home screen
-
