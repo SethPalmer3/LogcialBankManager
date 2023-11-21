@@ -1,3 +1,6 @@
+from collections.abc import Callable
+from typing import TypeVar
+from uuid import UUID
 from django.apps import apps
 
 EXPR_TYPE_VALUE = 'value'
@@ -18,6 +21,9 @@ FORM_EXPR_NAME = 'expr_name'
 IS_VAL_OR_REF = 'value_or_ref'
 ACTION_FREEZE = 'freeze'
 ACTION_TRANSFER = 'transfer'
+ACTION_TRANSFER_FROM = 'transfer_from'
+ACTION_TRANSFER_TO = 'transfer_to'
+ACTION_TRANSFER_AMOUNT = 'transfer_amount'
 FORM_ACTION = 'action'
 
 ACTIONS_CHOICES = [
@@ -97,10 +103,17 @@ def rule_entity_stringify(ent_id, ent_type, ent_name, is_current=False):
 
     return (value,disp)
 
-def rule_entity_destringify(s):
-    (value,_) = s
-    (ent_id, ent_type, ent_name) = value.split(',')
-    return (ent_id, ent_type, ent_name)
+def rule_entity_destringify(s: str) -> tuple[str, str, str]:
+    """
+    Splits a input select string into entity id, entity type, entity name in that order.
+    """
+    # (value,_) = s
+    str_split = s.split(',')
+    if len(str_split) == 3:
+        (ent_id, ent_type, ent_name) = str_split
+        return (ent_id, ent_type, ent_name)
+    else:
+        return ('', '', '')
 
 
 def entities_list(user_id, partition_id):
@@ -133,10 +146,17 @@ def entity_attr_list(ent_type=None):
 
     return ret
 
-def get_type_string(obj_id, obj_type):
+def get_type_string(obj_id: UUID, obj_type: str):
     app_conv = EXPR_REF_TYPE_APP_CONVERT[obj_type]
     if obj_type == REF_TYPE_USER:
         obj_type = "UserProfile"
     select_model = apps.get_model(app_conv, obj_type)
     return select_model.objects.get(id=obj_id)
 
+D = TypeVar("D")
+O = TypeVar("O")
+def execute_or_default(f: Callable[..., O], d: D, *args, **kwargs) -> O | D:
+    try:
+        return f(*args, **kwargs)
+    except:
+        return d

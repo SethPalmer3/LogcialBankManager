@@ -13,16 +13,30 @@ class Partition(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     is_unallocated = models.BooleanField(default=False)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    label = encrypt(models.CharField(max_length=200))
+    label: str = encrypt(models.CharField(max_length=200))
     # TODO: set init_amount on creation
     init_amount = encrypt(models.DecimalField(max_digits=20,decimal_places=2, default=Decimal(0.0)))
     current_amount = encrypt(models.DecimalField(max_digits=20,decimal_places=2, default=Decimal(0.0)))
     description = encrypt(models.CharField(default="", max_length=1000, blank=True))
+    frozen = models.BooleanField(default=False)
     objects = models.Manager()
     def __str__(self):
         return f"{self.label}"
     def select_string(self):
         return f"{self.id},{pg.REF_TYPE_PART},{self.label}"
+    def transfer(self, other: "Partition", amount: Decimal) -> bool:
+        """
+        Make transfer if both partitions are able to. Return if transfer was successful
+        """
+        if amount < Decimal(0.0) or self.frozen or other.frozen:
+            return False
+        elif self.current_amount >= amount:
+            self.current_amount -= amount
+            other.current_amount += amount
+            self.save()
+            other.save()
+            return True
+        return False
 
 UNIOP_REF_TYPE_CONVERT = {
     'Partition': Partition,
@@ -65,7 +79,7 @@ class RuleUniopExpression(models.Model):
 class RuleBiopExpression(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     label = encrypt(models.CharField(max_length=20, null=True, blank=True))
-    partition= models.ForeignKey(to=Partition, null=True, blank=True, on_delete=models.CASCADE)
+    partition = models.ForeignKey(to=Partition, null=True, blank=True, on_delete=models.CASCADE)
     left_expr = models.ForeignKey(to="RuleBiopExpression", related_name="left_expression", null=True, blank=True, on_delete=models.SET_NULL)
     right_expr = models.ForeignKey(to="RuleBiopExpression", related_name="right_expression", null=True, blank=True, on_delete=models.SET_NULL)
     is_value = models.BooleanField(default=False)
@@ -73,6 +87,9 @@ class RuleBiopExpression(models.Model):
     value = models.ForeignKey(to=RuleUniopExpression, null=True, blank=True, on_delete=models.SET_NULL)
     operator = encrypt(models.CharField(max_length=20, choices=pg.BIOPS_CHOICES, null=True, blank=True))
     action = encrypt(models.CharField(max_length=20, null=True, blank=True))
+    preformed_action = models.BooleanField(default=False)
+    transfer_to = models.ForeignKey(to=Partition, related_name="transfer_to", null=True, blank=True, on_delete=models.SET_NULL)
+    transfer_amount = models.DecimalField(max_digits=30, decimal_places=2, default=Decimal(0.0))
     objects = models.Manager()
     def __str__(self):
         if self.value is not None and self.is_value:
@@ -115,4 +132,22 @@ class RuleBiopExpression(models.Model):
         except RuleBiopExpression.DoesNotExist:
             parent_expr_right = None
         return None
+    def preform_action(self):
+        """
+        Preform set action if applicable
+        """
+        if not self.is_root:
+            return
+        if self.preformed_action or not self.evaluate():
+            return
 
+        if self.action == pg.ACTION_TRANSFER and \
+            self.transfer_to and self.partition and \
+            self.transfer_amount > Decimal(0.00):
+                self.partition.transfer(self.transfer_to, self.transfer_amount)
+        elif self.action == pg.ACTION_FREEZE and \
+            self.partition:
+            self.partition.frozen
+            self.partition.save()
+        self.preformed_action = True
+        self.save()

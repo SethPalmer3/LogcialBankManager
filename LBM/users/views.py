@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import logout
+from django.http.request import HttpRequest
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models.functions import Lower
@@ -23,7 +24,7 @@ def empty_user_total(request):
     request.user.userprofile.save()
     return redirect(reverse('users:home'))
 
-def invalidate_user_token(request):
+def invalidate_user_token(request: HttpRequest):
     request.user.userprofile.valid_token = False
     request.user.userprofile.refresh_token = None
     request.user.userprofile.save()

@@ -26,20 +26,15 @@
             </div>
         </div>
         <div class="box">
-        <h2 class="subheading_text text">Action</h2>
-        <form method="post" action="{% url 'partitions:set_action' expr.id %}">
-            {% csrf_token %}
-            {{ form.action }}
-        </form>
+            <h2 class="subheading_text text">Action</h2>
+            <form method="post" action="{% url 'partitions:set_action' expr.id %}" id="action_form">
+                {% csrf_token %}
+                {{ form.action }}
+                {{ form.transfer_to }}
+                {{ form.transfer_amount }}
+            </form>
         </div>
-        <script type="text/javascript">
-            document.addEventListener('DOMContentLoaded', function() {
-                var choiceField = document.getElementById('id_action');
-                choiceField.addEventListener('change', function() {
-                    this.form.submit();
-                });
-            });
-        </script>
+        <script src="{% static 'partitions/rule_expr_view.js' %}"></script>
     {% else %}
         <a href="{% url 'partitions:rule_expr_create' part_id %}">{{ None }}</a>
     {% endif %}

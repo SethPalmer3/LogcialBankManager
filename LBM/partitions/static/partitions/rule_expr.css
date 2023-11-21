@@ -24,13 +24,23 @@
     padding-bottom: 10px;
 }
 
-#id_action {
-    background-color: var(--background-color);
+form{
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+select, input[type="number"] {
+    display: flex;
+    text-align: center;
+    background-color: inherit;
     border-color: var(--outline-color);
     border-width: var(--outline-width);
     border-style: solid;
     color: var(--text-color);
     font-family: var(--text-font);
     font-size: var(--text-size);
+    margin: 10px;
+    cursor: pointer;
 }
 

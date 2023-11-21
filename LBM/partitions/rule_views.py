@@ -23,7 +23,7 @@ def rule_expr_view(request: HttpRequest, expr_id):
     if expr_node is None or not expr_node.is_root:
         messages.error(request, "Could not load this rule")
         return redirect(reverse('users:home'))
-    form = SetActionForm(instance=expr_node or None, data=request.POST or None)
+    form = SetActionForm(instance=expr_node or None, user=request.user, data=request.POST or None)
     return render(request, 'rule_expr.html', context={'form': form, 'expr': expr_node, 'part_id': expr_node.partition.id})
 
 def rule_expr_edit(request, expr_id):
@@ -246,11 +246,19 @@ def rule_expr_set_action(request, expr_id):
     expr_node = RuleBiopExpression.objects.get(id=expr_id)
     if not expr_node.is_root:
         return redirect('partitions:rule_expr_view', expr_id=expr_node.get_root().id)
-    form = SetActionForm(instance=expr_node, data=request.POST or None)
+    form = SetActionForm(instance=expr_node, user=request.user, data=request.POST or None)
     if request.method == "POST":
-        print(form.is_valid())
         if form.is_valid():
             expr_node.action = form.cleaned_data[FORM_ACTION]
+            if expr_node.action == ACTION_TRANSFER:
+                (to_id, _, _) = rule_entity_destringify(form.cleaned_data[ACTION_TRANSFER_TO])
+                if to_id != "":
+                    to_partition = Partition.objects.get(id=to_id) or None
+                else:
+                    to_partition = None
+                expr_node.transfer_amount = form.cleaned_data[ACTION_TRANSFER_AMOUNT]
+                expr_node.transfer_to = to_partition
+            expr_node.preformed_action = False
             expr_node.save()
             return redirect('partitions:rule_expr_view', expr_id=expr_node.get_root().id)
     return render(request, 'rule_set_action.html', context={'form': form, 'partition_id': expr_node.partition.id})

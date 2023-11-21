@@ -1,4 +1,6 @@
+from decimal import Decimal
 from django import forms
+from django.contrib.auth.models import User
 
 from .partition_globals import *
 from .models import Partition, RuleBiopExpression
@@ -25,7 +27,7 @@ class RuleExpressionEditForm(forms.Form):
         if instance is not None:
             if instance.is_root:
                 self.fields[FORM_EXPR_NAME] = forms.CharField(label="Rename Rule", initial=instance.label or "", max_length=20)
-            elif instance.is_value:
+            elif instance.is_value and instance.value:
                 if instance.value.is_reference:
                     init_type = EXPR_TYPE_REF
                 else:
@@ -69,16 +71,29 @@ class RuleExpressionAddForm(forms.Form):
                 ref_ents = entities_list(user_id, partition_id)
                 ref_attrs = entity_attr_list()
                 self.fields[FORM_REF_ATTRS] = forms.ChoiceField(choices=ref_attrs, required=False)
-                # self.fields['ref_type'] = forms.ChoiceField(choices=self.EXPR_REF_TYPES, required=False)
                 self.fields[FORM_REF_ENTS] = forms.ChoiceField(choices=ref_ents, required=False)
+
+def get_transfer_options(part_owner: User) -> list[tuple[str, str]]:
+    partitions = Partition.objects.filter(owner=part_owner)
+    ret: list[tuple[str, str]] = [('', 'Select a Partiton')]
+    for p in partitions:
+        ret.append((p.select_string(), p.label))
+    return ret
 
 class SetActionForm(forms.Form):
     def __init__(self, *args, **kwargs):
-        instance = kwargs.pop('instance', None)
+        instance: RuleBiopExpression | None = kwargs.pop('instance', None)
+        owner: User | None = kwargs.pop('user', None)
 
         super(SetActionForm, self).__init__(*args, **kwargs)
 
-        if instance:
+        if instance is not None:
             self.fields[FORM_ACTION] = forms.ChoiceField(choices=ACTIONS_CHOICES, initial=instance.action, required=False)
+            init_to = execute_or_default(Partition.select_string, "", self=instance.transfer_to)
+            self.fields[ACTION_TRANSFER_TO] = forms.ChoiceField(choices=get_transfer_options(instance.partition.owner or owner), initial=init_to, required=False)
+            self.fields[ACTION_TRANSFER_AMOUNT] = forms.DecimalField(max_digits=30, decimal_places=2, initial=instance.transfer_amount, required=False)
         else:
             self.fields[FORM_ACTION] = forms.ChoiceField(choices=ACTIONS_CHOICES, required=False)
+            if owner:
+                self.fields[ACTION_TRANSFER_TO] = forms.ChoiceField(choices=get_transfer_options(owner), required=False)
+                self.fields[ACTION_TRANSFER_AMOUNT] = forms.DecimalField(max_digits=30, decimal_places=2, initial=Decimal(0.0), required=False)
