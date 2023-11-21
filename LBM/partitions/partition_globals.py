@@ -94,13 +94,13 @@ PARENT_EXPR_DIR_CHOICES = [
     (FORM_CHILD_RIGHT, "Put Right Hand Side"),
 ]
 
-def rule_entity_stringify(ent_id, ent_type, ent_name, is_current=False):
+def rule_entity_stringify(ent_id, ent_type, ent_name, is_current=False, is_frozen=False):
     value = f"{ent_id},{ent_type},{ent_name}"
+    disp = f"[{ent_type}]: {ent_name}"
     if is_current:
-        disp = f"[{ent_type}]: {ent_name}(current)"
-    else:
-        disp = f"[{ent_type}]: {ent_name}"
-
+        disp += "(current)"
+    if is_frozen:
+        disp += "(frozen)"
     return (value,disp)
 
 def rule_entity_destringify(s: str) -> tuple[str, str, str]:
@@ -123,7 +123,7 @@ def entities_list(user_id, partition_id):
     userprof = UserProfile.objects.get(id=user_id)
     user = userprof.user
     for p in Partition.objects.filter(owner=user): # Get all partitons
-        ret.append(rule_entity_stringify(p.id,REF_TYPE_PART, p.label, p.id==partition_id))
+        ret.append(rule_entity_stringify(p.id,REF_TYPE_PART, p.label, p.id==partition_id, p.frozen))
     ret.append(rule_entity_stringify(userprof.pk, REF_TYPE_USER, user.username))
     return ret
 

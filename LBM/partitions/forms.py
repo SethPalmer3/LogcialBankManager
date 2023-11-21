@@ -52,7 +52,6 @@ class RuleExpressionEditForm(forms.Form):
                 if instance.value.is_reference:
                     search_obj = get_type_string(instance.value.reference_id, instance.value.reference_type)
                     init_ent = search_obj.select_string()
-                    print(init_ent)
                     init_attr = f"{instance.value.reference_type},{instance.value.reference_attr}"
                 else:
                     init_ent = None

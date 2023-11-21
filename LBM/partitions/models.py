@@ -180,11 +180,11 @@ def rule_check(sender, instance: RuleBiopExpression, created, **kwargs):
     if updated_fields is not None:
         target_value = False
         for a in ['operator', 'action', 'transfer_to', 'transfer_amount']:
-            target_value |= (a in kwargs.get('update_fields'))
+            target_value |= (a in updated_fields)
         if target_value:
-            print("Passed rule check")
             update_rules()
-            instance.preformed_action = False
+            if not instance.evaluate():
+                instance.preformed_action = False
             instance.save()
 
 @receiver(post_save, sender=RuleUniopExpression)
