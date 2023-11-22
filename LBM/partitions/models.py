@@ -1,5 +1,7 @@
 from decimal import Decimal
-from django.contrib.auth.models import User
+from django.contrib import messages
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.models import AnonymousUser, User
 from django.db import models, transaction
 from django_cryptography.fields import encrypt
 from django.db.models.signals import post_save
@@ -40,6 +42,59 @@ class Partition(models.Model):
             return True
         return False
 
+    @classmethod
+    def get_users_partitions(cls, owner: AbstractBaseUser | AnonymousUser) -> models.QuerySet:
+        """Gets a users partitions, doesn't include the unallocated paritition by default"""
+        return cls.objects.filter(owner=owner, is_unallocated=False)
+
+    @classmethod
+    def get_users_unallocated_partition(cls, owner: AbstractBaseUser | AnonymousUser) -> "Partition|None":
+        """Gets a users unallocated partition if it exists."""
+        try:
+            unalloc = cls.objects.get(owner=owner, is_unallocated=True)
+            return unalloc
+        except cls.DoesNotExist:
+            return None
+
+    @classmethod
+    def get_partition_list_html(cls):
+        """Returns a the html of a users partition list."""
+        return "partition_list.html"
+
+    @classmethod
+    def update_unallocated_partition(cls, owner: AbstractBaseUser | AnonymousUser, total_amount: Decimal) -> tuple["Partition|None", models.QuerySet]:
+        partitions = Partition.get_users_partitions(owner=owner)
+        diff = pg.check_partitions(partitions, total_amount=total_amount)
+        unallocated_partition: Partition|None = Partition.get_users_unallocated_partition(owner=owner)
+
+        if diff is None: # Checks if userprof has a total_amount
+            if unallocated_partition is not None:
+                unallocated_partition.delete()
+                unallocated_partition = None
+            return (unallocated_partition, partitions)
+
+        if diff >= 0.0: # checking if partition total is the same or lower than user total
+            if unallocated_partition is not None:
+                unallocated_partition.current_amount = diff
+                unallocated_partition.save()
+            else:
+                Partition.objects.create(
+                    is_unallocated = True,
+                    owner = owner,
+                    label = "Unallocated",
+                    init_amount = Decimal(0.00),
+                    current_amount = diff,
+                    description = ""
+                )
+        else: # If the partition allocation is bigger than user total
+            if unallocated_partition is not None:
+                if unallocated_partition.current_amount + diff >= 0.0:
+                    unallocated_partition.current_amount += diff
+                    unallocated_partition.save()
+                else:
+                    unallocated_partition.delete()
+                    unallocated_partition = None
+        return (unallocated_partition, partitions)
 UNIOP_REF_TYPE_CONVERT = {
     'Partition': Partition,
     'User': UserProfile,

@@ -47,7 +47,13 @@ def user_home(request:HttpRequest):
 
     if request.user is None or not request.user.is_authenticated:
         return redirect(reverse('logins:login'))
-    partitions = Partition.objects.filter(owner=request.user, is_unallocated=False)
+    try:
+        userprof = UserProfile.objects.get(user=request.user)
+        total_amount = userprof.total_amount
+    except UserProfile.DoesNotExist:
+        total_amount = Decimal(-1.0)
+
+    (unalloc, partitions) = Partition.update_unallocated_partition(request.user, total_amount=total_amount)
     sorted_partitions = sorted([obj for obj in partitions], key=lambda x: x.label.lower())
     try:
         userprof = UserProfile.objects.get(user=request.user)
@@ -55,36 +61,5 @@ def user_home(request:HttpRequest):
         logout(request)
         return redirect(reverse('users:home'))
 
-    diff = check_partitions(partitions, request.user)
-    try:
-        unallocated_partition: Partition|None = Partition.objects.get(owner=request.user, is_unallocated=True)
-    except Partition.DoesNotExist:
-        unallocated_partition = None
-
-    if diff is None or userprof.total_amount is None: # Checks if userprof has a total_amount
-        if unallocated_partition is not None:
-            unallocated_partition.delete()
-            unallocated_partition = None
-        partitions = Partition.objects.filter(owner=request.user, is_unallocated=False)
-        return render(request, 'home.html', {'user_parts': partitions, 'user_profile': userprof, 'unalloc': unallocated_partition})
-
-    if diff >= 0.0: # checking if partition total is the same or lower than user total
-        if unallocated_partition is not None:
-            unallocated_partition.current_amount = diff
-            unallocated_partition.save()
-        else:
-            create_partition(request.user, True, "Unallocated", Decimal(diff))
-            partitions = Partition.objects.filter(owner=request.user)
-    else: # If the partition allocation is bigger than user total
-        if unallocated_partition is not None:
-            if unallocated_partition.current_amount + diff >= 0.0:
-                unallocated_partition.current_amount += diff
-                unallocated_partition.save()
-            else:
-                unallocated_partition.delete()
-                unallocated_partition = None
-                messages.error(request, f"Over allocated balance by ${abs(diff)}")
-        else:
-            messages.error(request, f"Over allocated balance by ${abs(diff)}")
-    return render(request, 'home.html', {'user_parts': sorted_partitions, 'user_profile': userprof, 'unalloc': unallocated_partition})
+    return render(request, Partition.get_partition_list_html(), context={"parent": "home.html", "unalloc": unalloc, "user_parts": sorted_partitions})
 

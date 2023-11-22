@@ -14,32 +14,6 @@ from logins.forms import BankSelectForm
 from .models import ExternalWebApp, UserProfile
 from partitions.models import Partition
 
-def check_partitions( partitons: QuerySet, user=None, total_amount = 0.0) -> float|None:
-    """Checks if the query set of partitons amounts are allowed. if user is non 
-
-    Args:
-        partitons(QuerySet): The query set of partitions
-        user(User | None): the associated user profile(default=None)
-        total_amount(Decimal): The amount to check against(if user is None)
-
-    Returns: 
-        float|None: the difference from the allowed total and the partition total
-    """
-    if total_amount < 0.0:
-        return None
-    total = 0
-    for p in partitons:
-        if not p.is_unallocated:
-            total += p.current_amount
-
-    if user is None:
-        return total_amount - total
-    userprof = UserProfile.objects.filter(user=user).first()
-    if userprof is not None and userprof.total_amount is not None:
-        return userprof.total_amount - total
-    else:
-        return None
-
 def create_partition(owner, is_unallocated=False, label="Undefined", amount = Decimal(0.00), description=""):
     """
     Creates and returns a new partition

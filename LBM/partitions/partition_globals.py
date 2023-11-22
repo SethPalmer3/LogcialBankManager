@@ -1,7 +1,11 @@
 from collections.abc import Callable
+from decimal import Decimal
 from typing import Any, TypeVar
 from uuid import UUID
 from django.apps import apps
+from django.contrib.auth.models import User
+from django.db.models import QuerySet
+
 
 EXPR_TYPE_VALUE = 'value'
 EXPR_TYPE_REF = 'reference'
@@ -175,3 +179,24 @@ def set_changed_field(obj: object, field: str, value: Any) -> list[str]:
         return [field]
     except AttributeError:
         return []
+
+def check_partitions(partitons: QuerySet["Partition"], user: User|None =None, total_amount: Decimal = Decimal(0.0)) -> float|None:
+    """Determines the difference between total amount a user has and total in partitons
+
+    Args:
+        partitons(QuerySet): The query set of partitions
+        user(User | None): the associated user profile(default=None)
+        total_amount(Decimal): The amount to check against(if user is None)
+
+    Returns: 
+        float|None: the difference from the allowed total and the partition total
+    """
+    if total_amount < 0.0:
+        return None
+    total = Decimal(0.0)
+    for p in partitons:
+        if not p.is_unallocated:
+            total += p.current_amount
+
+    if user is None:
+        return total_amount - total
