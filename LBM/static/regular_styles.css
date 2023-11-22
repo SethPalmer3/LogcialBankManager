@@ -1,0 +1,141 @@
+
+.background {
+    background-color: var(--back-color);
+}
+
+.button_hover{
+    transition: background-color, transform 0.1s;
+}
+
+.button_hover:hover {
+    background-color: var(--button-hover-color);
+    transform: scale(1.05);
+}
+
+.outline {
+    outline-color: var(--outline-color);
+    border-color: var(--outline-color);
+}
+
+.text {
+    color: var(--text-color);
+    font-family: var(--text-font);
+}
+
+.success {
+    color: var(--success-color);
+}
+
+.error {
+    color: var(--error-color);
+}
+
+.anchor_wrap {
+    text-decoration: none;
+    display: inline-block;
+    vertical-align: middle;
+
+    font-size: var(--text-size);
+    /* font-family: monospace; */
+    font-family: var(--text-font);
+    text-align: center;
+
+    outline-style: solid;
+    outline-width: 2px;
+    
+    /* margin-top: 30px; */
+    /* margin-left: 20px; */
+    margin: 1vh;
+
+    padding: 1vh;
+
+    transition: background-color, transform 0.1s;
+    cursor: pointer;
+    height: 5vh;
+
+    line-height: 5vh;
+}
+
+.anchor_wrap:hover {
+    transform: scale(1.05);
+}
+
+.anchor_wrap:active{
+  background-color: grey;
+}
+
+.button_like {
+    /* outline-width: 2px; */
+    /* outline-style: solid; */
+    transition: background-color, scale 0.3s;
+    cursor: pointer;
+}
+
+.button_like:hover{
+    transform: scale(1.05);
+}
+
+.button_like:active{
+    background-color:grey;
+}
+
+.button {
+    background-color: inherit;
+    line-height: 0vh;
+    border-width: 0px;
+}
+
+.left_justified {
+    left: 30px;
+}
+
+.right_justified {
+    right: 30px;
+}
+
+.sector {
+    position:fixed;
+    top: 5px;
+    display: flex;
+    gap: 10px;
+    display: flex;
+    flex-direction: column;
+    border-width: 0px;
+    border-style: solid;
+    border-radius: 10px;
+    width: 50vh; 
+    padding: 5px;
+    vertical-align: top;
+    transition: background-color, scale 0.3s;
+    margin-left: 10px;
+    margin-top: 10px;
+}
+
+.inner_sector {
+    list-style-type: square;
+    list-style-position: inside;
+    font-size: 20px;
+}
+
+.success {
+    color: #228B22;
+}
+.error {
+    color: #882D17;
+}
+
+.heading_text {
+    font-family: 'Rubik';
+}
+
+.subheading_text {
+    font-family: "Orbitron";
+}
+
+@media screen and (max-width: 1000px){
+    .anchor_wrap{
+        font-size: 20px;
+        line-height: 1;
+        align-items: center;
+    }
+}

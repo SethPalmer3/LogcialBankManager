@@ -1,0 +1,23 @@
+{% extends parent %}
+
+{% block partition_list %}
+
+    <div class="partition_container">
+        {% if unalloc and unalloc.id %}
+        <a href="{% url 'partitions:partition' unalloc.id %}" class="unalloct_link">
+            <div class="unallocated outline text button_hover">
+                <p class="partition_label"> {{ unalloc.label }} - ${{ unalloc.current_amount }} </p>
+            </div>
+        </a>
+        {% endif %}
+        {% for p in user_parts %}
+        <a href="{% url 'partitions:partition' p.id %}" class="partition_wrap_link text outline">
+            <div class="partition_wrap outline button_hover">
+                <p class="partition_label text"> {{ p.label }} </p>
+                <div class="dots"></div>
+                <p class="partition_amount text"> ${{ p.current_amount }} </p>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+{% block partition_list %}
