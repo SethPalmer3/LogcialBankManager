@@ -1,9 +1,8 @@
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.http.request import HttpRequest
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.db.models.functions import Lower
 
 from .models import UserProfile
 from partitions.models import Partition
@@ -25,9 +24,11 @@ def empty_user_total(request):
     return redirect(reverse('users:home'))
 
 def invalidate_user_token(request: HttpRequest):
-    request.user.userprofile.valid_token = False
-    request.user.userprofile.refresh_token = None
-    request.user.userprofile.save()
+    userprof = get_UserProfile(request.user)
+    if userprof:
+        userprof.valid_token = False
+        userprof.refresh_token = None
+        userprof.save()
     return redirect(reverse('users:home'))
 
 def refresh_user_token(reqeust):
@@ -36,7 +37,7 @@ def refresh_user_token(reqeust):
     return redirect(reverse('users:home'))
 
 @login_required(login_url="/login/")
-def user_home(request):
+def user_home(request:HttpRequest):
     '''
     The home page view for a logged in user
     '''
@@ -56,7 +57,7 @@ def user_home(request):
 
     diff = check_partitions(partitions, request.user)
     try:
-        unallocated_partition: Partition = Partition.objects.get(owner=request.user, is_unallocated=True)
+        unallocated_partition: Partition|None = Partition.objects.get(owner=request.user, is_unallocated=True)
     except Partition.DoesNotExist:
         unallocated_partition = None
 
@@ -72,7 +73,7 @@ def user_home(request):
             unallocated_partition.current_amount = diff
             unallocated_partition.save()
         else:
-            create_partition(request.user, True, "Unallocated", diff)
+            create_partition(request.user, True, "Unallocated", Decimal(diff))
             partitions = Partition.objects.filter(owner=request.user)
     else: # If the partition allocation is bigger than user total
         if unallocated_partition is not None:

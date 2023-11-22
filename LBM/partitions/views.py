@@ -56,7 +56,8 @@ def add_partition(request):
     if request.method == "POST":
         form = NewPartiton(request.POST)
         if form.is_valid():
-            part = form.save(commit=True)
+            part: Partition = form.save(commit=True)
+            part.init_amount = part.current_amount
             part.owner = request.user
             part.save()
             messages.success(request, f'Successfully created a partition {part.label}')

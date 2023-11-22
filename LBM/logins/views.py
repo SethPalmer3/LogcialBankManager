@@ -139,10 +139,10 @@ def transfer(request):
     if need_bank_login(request, messages):
         return redirect(reverse('logins:get_bank'), return_url=reverse('logins:transfer'))
     bank_accounts_list = get_bank_accounts("Dummy Bank", request, messages)
-    try:
-        form = BankTransferForm(bank_accounts=bank_accounts_list, data=request.POST or None)  # Moved this line here
-    except:
+    # TODO test this
+    if bank_accounts_list is None:
         return redirect(reverse("logins:get_bank"))
+    form = BankTransferForm(bank_accounts=bank_accounts_list, data=request.POST or None)
 
     if bank_accounts_list is not None and request.method == 'POST':
         bank_accounts = {acc['id']: acc for acc in bank_accounts_list}

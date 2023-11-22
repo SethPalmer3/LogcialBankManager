@@ -16,7 +16,6 @@ class Partition(models.Model):
     is_unallocated = models.BooleanField(default=False)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     label: str = encrypt(models.CharField(max_length=200))
-    # TODO: set init_amount on creation
     init_amount = encrypt(models.DecimalField(max_digits=20,decimal_places=2, default=Decimal(0.0)))
     current_amount = encrypt(models.DecimalField(max_digits=20,decimal_places=2, default=Decimal(0.0)))
     description = encrypt(models.CharField(default="", max_length=1000, blank=True))
@@ -26,7 +25,7 @@ class Partition(models.Model):
         return f"{self.label}"
     def select_string(self):
         return f"{self.id},{pg.REF_TYPE_PART},{self.label}"
-    def transfer(self, other: "Partition", amount: Decimal, _signal_triggered=False) -> bool:
+    def transfer(self, other: "Partition", amount: Decimal) -> bool:
         """
         Make transfer if both partitions are able to. Return if transfer was successful
         """
@@ -136,11 +135,11 @@ class RuleBiopExpression(models.Model):
         except RuleBiopExpression.DoesNotExist:
             parent_expr_right = None
         return None
-    def preform_action(self, _signal_triggered=False):
+    def preform_action(self):
         """
         Preform set action if applicable
         """
-        if not self.is_root:
+        if not self.is_root or not self.partition:
             return
         if self.preformed_action or not self.evaluate():
             print(f"didn't preform action for {self.label}")
@@ -150,28 +149,28 @@ class RuleBiopExpression(models.Model):
             self.transfer_to and self.partition and \
             self.transfer_amount > Decimal(0.00):
                 self.partition.frozen = False
-                self.partition.transfer(self.transfer_to, self.transfer_amount, _signal_triggered=_signal_triggered)
+                self.partition.transfer(self.transfer_to, self.transfer_amount)
         elif self.action == pg.ACTION_FREEZE and \
             self.partition:
             self.partition.frozen = True
             self.partition.save()
         self.preformed_action = True
-        # if not _signal_triggered:
-        self.save()
         self.partition.save()
+        self.save()
 
 def update_rules():
     rules = RuleBiopExpression.objects.filter(is_root=True)
     for r in rules:
         with transaction.atomic():
-            r.preform_action(_signal_triggered=True)
+            r.preform_action()
             r.save()
             if r.partition:
                 r.partition.save()
 
 @receiver(post_save, sender=Partition)
 def partiton_check(sender, instance, created, **kwargs):
-    if kwargs.get('update_fields') and "current_amount" in kwargs.get('update_fields'):
+    updated_fields = kwargs.get('update_fields')
+    if kwargs.get('update_fields') and "current_amount" in updated_fields:
         update_rules()
 
 @receiver(post_save, sender=RuleBiopExpression)

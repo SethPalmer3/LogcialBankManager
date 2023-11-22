@@ -1,6 +1,8 @@
 from datetime import timezone
-from uuid import uuid4
+from decimal import Decimal
+# from uuid import uuid4
 from django.contrib import messages
+from django.core.handlers.asgi import HttpRequest
 from django.db.models import QuerySet, UUIDField
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -13,14 +15,15 @@ from .models import ExternalWebApp, UserProfile
 from partitions.models import Partition
 
 def check_partitions( partitons: QuerySet, user=None, total_amount = 0.0) -> float|None:
-    """
-    checks if the query set of partitons amounts are allowed. if user is non 
+    """Checks if the query set of partitons amounts are allowed. if user is non 
 
-    partitons: The query set of partitions
-    user: the associated user profile(default=None)
-    total_amount: The amount to check against(if user is None)
+    Args:
+        partitons(QuerySet): The query set of partitions
+        user(User | None): the associated user profile(default=None)
+        total_amount(Decimal): The amount to check against(if user is None)
 
-    Return: the difference from the allowed total and the partition total
+    Returns: 
+        float|None: the difference from the allowed total and the partition total
     """
     if total_amount < 0.0:
         return None
@@ -37,16 +40,18 @@ def check_partitions( partitons: QuerySet, user=None, total_amount = 0.0) -> flo
     else:
         return None
 
-def create_partition(owner, is_unallocated=False, label="Undefined", amount = 0.0, description=""):
+def create_partition(owner, is_unallocated=False, label="Undefined", amount = Decimal(0.00), description=""):
     """
     Creates and returns a new partition
 
-    owner: User model associated with the new partition
-    label: Label for new partition(default="Undefined")
-    amount: Starting amount(default=0.0)
-    description: description of the partition
+    Args:
+        owner(User): User model associated with the new partition
+        label(str): Label for new partition(default="Undefined")
+        amount(Decimal): Starting amount(default=0.0)
+        description(str): description of the partition
 
-    Return: the new partition
+    Returns:
+        Partition: The new partition
     """
     first_partition = Partition.objects.create()
     first_partition.owner = owner
@@ -57,15 +62,21 @@ def create_partition(owner, is_unallocated=False, label="Undefined", amount = 0.
     first_partition.save()
     return first_partition
 
-def get_UserProfile(user):
+def get_UserProfile(user) -> UserProfile | None:
     """
     Returns the associated user profile model
     """
     return UserProfile.objects.filter(user=user).first()
 
-def bank_login_auth(name, username, password):
-    """
-    Make a web request to bank to get credentials
+def bank_login_auth(name: str, username: str, password: str) -> requests.Response | None:
+    """Make a web request to bank to get credentials with login information
+
+    Args:
+        name (str): Name of the External Web App to call to.
+        username (str): username associated with that Web App.
+        password (str): Password associated with that Web App.
+    Returns:
+        requests.Response | None: Either the responded object from the Web App or None if no Web App with `name` was found
     """
     bank = ExternalWebApp.objects.filter(name=name).first()
     if bank is not None:
@@ -84,9 +95,15 @@ def bank_login_auth(name, username, password):
         return response
     return None
 
-def request_bank_accounts(name, token_type, access_token):
-    """
-    Make a web request to bank to get bank account information
+def request_bank_accounts(name: str, token_type: str, access_token: str) -> requests.Response | None:
+    """Makes a web requests to a external web app of an already authenticated user to get their bank accounts.
+    Args:
+        name(str): Name of External Web App.
+        token_type(str): Type of token for request
+        access_token(str): Complementary access token
+    Returns:
+        requests.Response|None: The response object of the request or `None` if no Web App was found with `name`.
+
     """
     bank = ExternalWebApp.objects.filter(name=name).first()
     if bank is not None:
@@ -228,11 +245,14 @@ def bank_login_form_sequence(request, messages):
         messages.error(request, f"Error fetching bank data: {e}")
     return render(request, 'bank_login.html')
 
-def get_bank_accounts(name, request, messages):
+def get_bank_accounts(name:str, request:HttpRequest, messages):
     '''
     Get bank accounts. Does not automatically redirect to bank login
     '''
-    userprof = request.user.userprofile
+    if request.user:
+        userprof = get_UserProfile(request.user)
+    else: 
+        return None
     if userprof is not None and userprof.valid_token:
         account_info = request_bank_accounts(name, userprof.token_type, userprof.access_token)
         if account_info is None:
@@ -240,11 +260,10 @@ def get_bank_accounts(name, request, messages):
             return None
         return account_info.json()['account_holder']['bank_accounts']
     else:
-        # TODO: Redirect to external bank login and retry
         messages.error(request, "Please login before getting bank accounts")
     return None
 
-def select_bank_sequence(request, messages):
+def select_bank_sequence(request: HttpRequest, messages):
     banks = [{'id': b.id.__str__(), 'name': b.name} for b in ExternalWebApp.objects.all()]
     try:
         bank_form = BankSelectForm(banks=banks, data=request.POST or None)
@@ -256,8 +275,8 @@ def select_bank_sequence(request, messages):
         if bank_form.is_valid():
             selected_bank_data = bank_form.cleaned_data['bank_select']
             print(selected_bank_data)
-            selected_bank = ExternalWebApp.objects.get(id=selected_bank_data)
-            userprof = request.user.userprofile
+            selected_bank: ExternalWebApp|None = ExternalWebApp.objects.get(id=selected_bank_data)
+            userprof = get_UserProfile(request.user)
             if userprof is None:
                 messages.error(request, "Could not find user profile")
                 return redirect(reverse('users:home'))
@@ -268,10 +287,9 @@ def select_bank_sequence(request, messages):
         # Provide selections
         return render(request, 'bank_select.html', context={'form': bank_form})
 
-
-def request_transfer(name, request, from_acc, to_acc, amount):
+def request_transfer(name:str, request:HttpRequest, from_acc:str, to_acc:str, amount):
     bank = ExternalWebApp.objects.filter(name=name).first()
-    userprof = request.user.userprofile
+    userprof = get_UserProfile(request.user)
     if bank is not None and userprof is not None and userprof.valid_token:
         request_obj = bank.get_bank_account['transfer']
         headers = {
@@ -283,6 +301,6 @@ def request_transfer(name, request, from_acc, to_acc, amount):
         data['amount'] = amount
         response = requests.post(request_obj['url'], headers=headers, data=data)
         return response
-    elif not userprof.valid_token:
+    elif userprof and not userprof.valid_token:
         messages.error(request, "Please login before making transfer")
     return None

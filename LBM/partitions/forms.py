@@ -2,9 +2,11 @@ from decimal import Decimal
 from django import forms
 from django.contrib.auth.models import User
 
+from users.helper_funcs import get_UserProfile
+from users.models import UserProfile
+
 from .partition_globals import *
 from .models import Partition, RuleBiopExpression
-
 
 class PartitionEditForm(forms.Form):
     LABEL = 'label'
@@ -36,7 +38,7 @@ class RuleExpressionEditForm(forms.Form):
     def __init__(self, *args, **kwargs):
         instance: RuleBiopExpression = kwargs.pop('instance', None)
         super(RuleExpressionEditForm, self).__init__(*args, **kwargs)
-        if instance is not None:
+        if instance is not None and instance.partition is not None:
             if instance.is_root:
                 self.fields[FORM_EXPR_NAME] = forms.CharField(label="Rename Rule", initial=instance.label or "", max_length=20)
             elif instance.is_value and instance.value:
@@ -47,15 +49,15 @@ class RuleExpressionEditForm(forms.Form):
                 self.fields[IS_VAL_OR_REF] = forms.ChoiceField(label="Value or Reference", initial=init_type, choices=[(EXPR_TYPE_VALUE, "Value"), (EXPR_TYPE_REF, "Reference")])
                 self.fields[FORM_VALUE_TYPE] = forms.ChoiceField(choices=UNIOP_VALUE_TYPE_CHOICES, required=False)
                 self.fields[FORM_VALUE_INPUT] = forms.CharField(max_length=50, initial=instance.value.get_appropiate_value(), required=False)
-                ref_ents = entities_list(instance.partition.owner.userprofile.id, instance.partition.id)
+                ref_ents = entities_list(get_UserProfile(instance.partition), instance.partition.id)
                 ref_attrs = entity_attr_list()
+                init_ent = None
+                init_attr = None
                 if instance.value.is_reference:
                     search_obj = get_type_string(instance.value.reference_id, instance.value.reference_type)
-                    init_ent = search_obj.select_string()
-                    init_attr = f"{instance.value.reference_type},{instance.value.reference_attr}"
-                else:
-                    init_ent = None
-                    init_attr = None
+                    if type(search_obj) == UserProfile or type(search_obj) == Partition:
+                        init_ent = search_obj.select_string()
+                        init_attr = f"{instance.value.reference_type},{instance.value.reference_attr}"
                 self.fields[FORM_REF_ENTS] = forms.ChoiceField(label="Enities", initial=init_ent, choices=ref_ents, required=False)
                 self.fields[FORM_REF_ATTRS] = forms.ChoiceField(label="Attributes", initial=init_attr, choices=ref_attrs, required=False)
 
