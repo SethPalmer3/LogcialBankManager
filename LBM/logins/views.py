@@ -60,7 +60,7 @@ def user_signup(request):
                     profile = UserProfile() # Custom user information
                     profile.user = user
                     profile.save()
-                    create_partition(user)
+                    create_partition(user, is_unallocated=True)
 
                 login(request, user) # Persistant login of user
                 return redirect(reverse('users:home')) # Redirects to their new home screen
