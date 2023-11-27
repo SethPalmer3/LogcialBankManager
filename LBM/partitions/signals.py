@@ -1,3 +1,10 @@
+"""
+signals.py
+
+Sets up signal receivers for updating partition rules
+
+"""
+
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.signals import request_started

@@ -1,3 +1,11 @@
+"""
+models.py
+
+Manages the models associated with partitions and partitions rule operations
+Contains receivers for updating and checking againist rules
+
+"""
+
 from decimal import Decimal
 from django.contrib.auth.models import User
 from django.db import models, transaction

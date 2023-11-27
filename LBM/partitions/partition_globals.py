@@ -1,3 +1,10 @@
+"""
+partition_globals.py
+
+Provides the operation logic for partition rule entities
+
+"""
+
 from collections.abc import Callable
 from typing import Any, TypeVar
 from uuid import UUID

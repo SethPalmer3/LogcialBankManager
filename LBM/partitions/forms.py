@@ -1,3 +1,10 @@
+"""
+forms.py
+
+Forms for editing/creating/adding partitions, rules, and expressions 
+
+"""
+
 from decimal import Decimal
 from django import forms
 from django.contrib.auth.models import User
