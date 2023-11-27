@@ -42,7 +42,6 @@ def user_home(request: HttpRequest):
     '''
     The home page view for a logged in user
     '''
-    print(settings.BASE_DIR)
     if TEST_MESSAGES:
         messages.success(request, "Success")
         messages.error(request, "Error")
