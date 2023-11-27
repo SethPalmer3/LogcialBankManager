@@ -191,6 +191,8 @@ def check_partitions(partitons: QuerySet["Partition"], user: User|None =None, to
     Returns: 
         float|None: the difference from the allowed total and the partition total
     """
+    if total_amount is None:
+        return None
     if total_amount < 0.0:
         return None
     total = Decimal(0.0)
