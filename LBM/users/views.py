@@ -37,7 +37,7 @@ def refresh_user_token(reqeust):
     return redirect(reverse('users:home'))
 
 @login_required(login_url="/login/")
-def user_home(request:HttpRequest):
+def user_home(request: HttpRequest):
     '''
     The home page view for a logged in user
     '''
@@ -65,7 +65,12 @@ def user_home(request:HttpRequest):
         if unallocated_partition is not None:
             unallocated_partition.delete()
             unallocated_partition = None
+        try:
+            unallocated_partition: Partition|None = Partition.objects.get(owner=request.user, is_unallocated=True)
+        except Partition.DoesNotExist:
+            unallocated_partition = None
         partitions = Partition.objects.filter(owner=request.user, is_unallocated=False)
+        sorted_partitions = sorted([obj for obj in partitions], key=lambda x: x.label.lower())
         return render(request, 'home.html', {'user_parts': partitions, 'user_profile': userprof, 'unalloc': unallocated_partition})
 
     if diff >= 0.0: # checking if partition total is the same or lower than user total
@@ -74,7 +79,6 @@ def user_home(request:HttpRequest):
             unallocated_partition.save()
         else:
             create_partition(request.user, True, "Unallocated", Decimal(diff))
-            partitions = Partition.objects.filter(owner=request.user)
     else: # If the partition allocation is bigger than user total
         if unallocated_partition is not None:
             if unallocated_partition.current_amount + diff >= 0.0:
@@ -86,5 +90,11 @@ def user_home(request:HttpRequest):
                 messages.error(request, f"Over allocated balance by ${abs(diff)}")
         else:
             messages.error(request, f"Over allocated balance by ${abs(diff)}")
+    try:
+        unallocated_partition: Partition|None = Partition.objects.get(owner=request.user, is_unallocated=True)
+    except Partition.DoesNotExist:
+        unallocated_partition = None
+    partitions = Partition.objects.filter(owner=request.user, is_unallocated=False)
+    sorted_partitions = sorted([obj for obj in partitions], key=lambda x: x.label.lower())
     return render(request, 'home.html', {'user_parts': sorted_partitions, 'user_profile': userprof, 'unalloc': unallocated_partition})
 
