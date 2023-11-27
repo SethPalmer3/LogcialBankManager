@@ -3,6 +3,7 @@ from django.contrib.auth import logout
 from django.http.request import HttpRequest
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 
 from .models import UserProfile
 from partitions.models import Partition
@@ -41,6 +42,7 @@ def user_home(request: HttpRequest):
     '''
     The home page view for a logged in user
     '''
+    print(settings.BASE_DIR)
     if TEST_MESSAGES:
         messages.success(request, "Success")
         messages.error(request, "Error")

@@ -1,0 +1,42 @@
+@font-face {
+    font-family: "Montserrat";
+    src: url('/static/Montserrat-VariableFont_wght.ttf')
+}
+@font-face{
+    font-family: "Orbitron";
+    src: url('/static/Orbitron-VariableFont_wght.ttf')
+}
+@font-face {
+    font-family: "Rubik";
+    src: url("RubikMonoOne-Regular.ttf")
+}
+
+:root{
+    --back-color: #D4CBC0;
+    --button-hover-color: #A1AEA0;
+    --outline-color: #806460; 
+    --outline-width: 2px;
+    --text-color: #704F70; 
+
+    --text-font: "Montserrat";
+    --header-font: "Rubik";
+    --subheader-font: "Orbitron";
+
+    --text-size: 23px;
+    --header-size: 40px;
+    --subheader-size: 24px;
+
+    --border-radius: 10px;
+    --input-padding: 20px;
+
+    --success-color: #228B22; 
+    --error-color: #882D17;
+}
+
+@media screen and (max-width:1700px){
+
+}
+
+@media screen and (max-width: 1000px){
+
+}

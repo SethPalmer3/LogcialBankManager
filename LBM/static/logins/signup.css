@@ -1,0 +1,131 @@
+body {
+    background-color: #E9EAEC;
+}
+
+h2{
+    color: #704F70;
+    margin-left: 20px;
+    margin-top: 30px;
+    text-decoration: underline;
+    font-family: monospace;
+    font-size: 40px;
+}
+
+input[type="submit"], button{
+  display: block;
+  margin-left: 20px;
+  margin-top: 20px;
+
+  font-size: 27px;
+  color: #704F70;
+
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+
+  background-color: inherit;
+  border-width: 0px;
+  /* border-radius: 10px; */
+  /* border-color: blue; */
+
+  outline: #333652 solid 2px;
+
+  cursor: pointer;
+
+  transition: background-color, scale 0.3s;
+}
+
+input[type="submit"]:hover, button:hover {
+  background-color: lightgrey;
+  scale: 105%;
+}
+
+
+input[type="submit"]:active, button:active {
+  background-color: grey;
+}
+
+input[type="text"], input[type="email"], input[type="password"] {
+    height: 40px;
+    padding: 20px;
+
+    color: #704F70;
+    background-color: inherit;
+    border-width: 3px;
+    border-radius: 10px;
+    border-color: #333652;
+
+    left: 20px;
+    font-size: 23px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 10px;
+
+    margin-left: 20px;
+}
+
+input[type="number"] {
+    height: 40px;
+    padding: 20px;
+
+    color: #704F70;
+    background-color: lightgrey;
+    border-width: 3px;
+    border-radius: 10px;
+    border-color: blue;
+
+    left: 20px;
+    font-size: 23px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 10px;
+
+    margin-left: 20px;
+}
+
+label{
+    color: #704F70;
+    font-size: 20px;
+    font-family: monospace;
+    margin-left: 20px;
+}
+
+.anchor_wrap {
+    text-decoration: none;
+    display: inline-block;
+    vertical-align: middle;
+
+    font-size: 23px;
+    font-family: monospace;
+    text-align: center;
+    color: #704F70;
+
+    outline: #333652 solid 2px;
+    
+    margin-top: 30px;
+    margin-left: 20px;
+
+    padding: 10px;
+
+    transition: background-color, scale 0.3s;
+    cursor: pointer;
+    height: 5vw;
+
+    line-height: 5vw;
+}
+
+.anchor_wrap:hover {
+  background-color: lightgrey;
+  scale: 105%;
+}
+
+.anchor_wrap:active{
+  background-color: grey;
+}
