@@ -1,3 +1,10 @@
+"""
+urls.py
+
+Defines URL patterrns for handling partition and rule actions
+
+"""
+
 from django.urls import path
 from . import views
 from . import rule_views

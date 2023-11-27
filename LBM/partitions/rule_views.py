@@ -1,3 +1,10 @@
+"""
+rule_views.py
+
+Contains views for the rules that govern partitions
+
+"""
+
 from typing import Any
 from django.db import transaction
 from django.contrib import messages
